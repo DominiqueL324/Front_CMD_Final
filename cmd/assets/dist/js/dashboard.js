@@ -203,7 +203,8 @@ function loadStat() {
         $("#agent_nombre").text(response["stats"]["agent"]);
         $("#nombre_client").text(response["stats"]["client"]);
         $("#rdv_attente").text(response["stats"]["rdv_attente"]);
-        $("#salarie_nombre").text(response["stats"]["salarie"]);
+	$("#salarie_nombre").text(response["stats"]["salarie"]);      
+        //$("#salarie_nombre").text(response["stats"]["salarie"]);
         $("#rdv_valide").text(response["stats"]["rdv_valide"]);
       }
 

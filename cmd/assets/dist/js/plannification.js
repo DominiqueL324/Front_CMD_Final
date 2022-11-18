@@ -33,7 +33,7 @@ function getAgentManage(as, ap) {
 
       $("#passeur_select").empty();
       $("#passeur_select").append(
-        " <label for='exampleInputEmail1'>Agent de secteur</label>\
+        " <label for='exampleInputEmail1'>Agent de constat</label>\
                 <select class='form-select form-control form-select-sm' id='constat_val'> " +
           content +
           "</select>"
@@ -268,11 +268,7 @@ function getCommentaires() {
             "/" +
             y +
             '</td>\
-                        <td>\
-                            <a href><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>\
-                        </td>\
-                        <td></td>\
-                    </tr>'
+            </tr>'
         );
       });
     },
@@ -669,9 +665,9 @@ function getRdvC(pris_en_charge = 0) {
             "</span>\
                         </td>\
                         <td>\
-                            <a  onclick='goWhereEdit(" +
+                            <a href='javascript:void(0);'  onclick='goWhereEdit(" +
             elt["id"] +
-            ')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a onclick=\'goWhereEdit1(' +
+            ')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a href="javascript:void(0);"  onclick=\'goWhereEdit1(' +
             elt["id"] +
             ')\'><i class="fa fa-calendar" aria-hidden="true" style="color: rgb(136, 102, 119)"></i></a>\
                         </td>\
