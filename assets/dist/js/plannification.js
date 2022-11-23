@@ -1,27 +1,32 @@
 var next = "";
 var prev = "";
-function getAgentManage(as, ap) {
+function getAgentManage(as, ap,secteur) {
   var content = "";
+  data={}
+  if($.cookie('group')=="Agent secteur"){
+    data = {"agent":$.cookie('id_user_logged'),"planneur":"okay"}
+  }
+  if($.cookie('group')=="Audit planneur"){
+    data = {"agent":secteur,"planneur":"okay","add_secteur":"no"}
+  }
   $.ajax({
     type: "GET",
-    url: asurl_not_paginated,
+    url: asurl_paginated,
     headers: {
       Authorization: "Bearer " + token,
     },
+    data:data,
     success: function (response) {
       //console.log(response)
       content = "<option value='0'></option>";
       response.forEach((elt) => {
-        content =
-          content +
-          "<option value = " +
-          elt["user"]["id"] +
-          ">" +
-          elt["user"]["nom"] +
-          "  " +
-          elt["user"]["prenom"] +
-          "</option>";
+        if(elt["user"]['group'] == "Audit planneur"){
+          content = content+ "<option value = " + elt["user"]["id"] +">" +"Planneur "+elt["user"]["nom"] +"  " +elt["user"]["prenom"] +"</option>"
+        }else{
+          content =content + "<option value = " + elt["user"]["id"] +">" +elt["user"]["nom"] +"  " +elt["user"]["prenom"] +"</option>";
+        }
       });
+      
 
       $("#planneur_select").empty();
       $("#planneur_select").append(
@@ -33,7 +38,7 @@ function getAgentManage(as, ap) {
 
       $("#passeur_select").empty();
       $("#passeur_select").append(
-        " <label for='exampleInputEmail1'>Agent de secteur</label>\
+        " <label for='exampleInputEmail1'>Agent de constat</label>\
                 <select class='form-select form-control form-select-sm' id='constat_val'> " +
           content +
           "</select>"
@@ -181,18 +186,19 @@ function getRdvToEditP() {
         });
       }
       var ap = "";
-      var as = "";
+      var ac = "";
+      var secteur = response[0]["agent"]['id']
       if (response[0]["audit_planneur"] == null) {
         ap = null;
       } else {
         ap = response[0]["audit_planneur"]["user"]["id"];
       }
       if (response[0]["agent_constat"] == null) {
-        as = null;
+        ac = null;
       } else {
-        as = response[0]["agent_constat"]["user"]["id"];
+        ac = response[0]["agent_constat"]["user"]["id"];
       }
-      getAgentManage(as, ap);
+      getAgentManage(ac, ap,secteur);
       getCommentaires();
       getFiles();
       $("#statut").val(parseInt(response[0]["statut"]).toString()).change();

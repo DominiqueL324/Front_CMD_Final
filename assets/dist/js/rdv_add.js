@@ -188,16 +188,14 @@ function getPasseur(cas = 0, add = 0) {
   }
 }
 function getAgent(cas = 1, val_ = 0) {
-  if (
-    $.cookie("group") == "Administrateur" ||
-    $.cookie("group") == "Audit planneur"
-  ) {
+  if ($.cookie("group") == "Administrateur" ||$.cookie("group") == "Audit planneur") {
     $.ajax({
       type: "GET",
       url: asurl_not_paginated,
       headers: {
         Authorization: "Bearer " + token,
       },
+      data:{'for_rdv':'ok'},
       success: function (response) {
         //console.log(response)
         content = "<option value='0'>SELECTIONNER</option>";
