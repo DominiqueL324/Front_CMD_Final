@@ -11,15 +11,20 @@ function getAgentManage(as, ap,secteur) {
   }
   $.ajax({
     type: "GET",
-    url: asurl_paginated,
+    url: asurl_not_paginated,
     headers: {
       Authorization: "Bearer " + token,
     },
     data:data,
     success: function (response) {
-      //console.log(response)
       content = "<option value='0'></option>";
-      response.forEach((elt) => {
+      var r 
+      if(typeof(response['results'])==="undefined" ){
+        r = response
+      }else{
+        r = response['results']
+      }
+      r.forEach((elt) => {
         if(elt["user"]['group'] == "Audit planneur"){
           content = content+ "<option value = " + elt["user"]["id"] +">" +"Planneur "+elt["user"]["nom"] +"  " +elt["user"]["prenom"] +"</option>"
         }else{
@@ -62,7 +67,10 @@ function getAgentManage(as, ap,secteur) {
     },
   });
 }
+
+
 function getRdvToEditP() {
+
   $.ajax({
     type: "GET",
     url: rdv_add + $.cookie("rdv_to_edit").toString(),
@@ -117,13 +125,14 @@ function getRdvToEditP() {
       $("#consignes_part").val(response[0]["consignes_particuliere"]);
       $("#list_documents").val(response[0]["liste_document_recuperer"]);
       $("#info_diverses").val(response[0]["info_diverses"]);
+      
       if (response[0]["client"] != null) {
         getClient(response[0]["client"]["user"]["id"], (val_ = 1));
       }
       if (response[0]["passeur"] != null) {
-        getPasseur((cas = response[0]["passeur"][0]["user"]["id"]));
+        getPasseur(cas = response[0]["passeur"][0]["user"]["id"],add=1,client=response[0]["client"]["user"]["id"]);
       } else {
-        getPasseur((cas = 0));
+        getPasseur(cas = 0,add=1,client=response[0]["client"]["user"]["id"]);
       }
       if (response[0]["agent"] != null) {
         getAgent((cas = 1), (val_ = response[0]["agent"]["user"]["id"]));
@@ -232,12 +241,15 @@ function getRdvToEditP() {
         $("#affectation").removeAttr("style");
         $("#validation").removeAttr("style");
       }
+      if($.cookie('group')=="Agent constat"){
+        $("#btnPlanneur").css("display", "none");
+      }
     },
     error: function (response) {
       console.log(response);
     },
   });
-}
+ }
 function getCommentaires() {
   $.ajax({
     type: "GET",
@@ -249,7 +261,6 @@ function getCommentaires() {
     success: function (response) {
       $("idComment").val("");
       $("#contentTableComments").empty();
-      console.log(response);
       response.forEach((elt) => {
         var formattedDate = new Date(elt["date"]);
         var d = formattedDate.getDate();
@@ -288,6 +299,7 @@ function getCommentaires() {
   });
 }
 function sendCommend() {
+  $("#editForm").modal('show');
   var method = "";
   var url = "";
   var data = {};
@@ -309,11 +321,16 @@ function sendCommend() {
       Authorization: "Bearer " + token,
     },
     success: function (response) {
+      $("#editForm").modal('hide');
       alert("Opération sur le commentaire effectuée avec succès");
       $("#comentaire").val("");
       $("#idComment").val("");
       getCommentaires();
     },
+    error: function(response){
+      $("#editForm").modal('hide');
+      alert("Opération sur le commentaire Echouée veuillez reéssayer plus tard");
+    }
   });
 }
 $("#goCommentaire").on("click", function () {
@@ -370,12 +387,8 @@ function getFiles() {
                         <td>" +
             elt["Type"] +
             "</td>\
-		<td> <a href='javascript:void(0);' onclick=downloadF('" +
-            route_file +
-            final_ +
-            "') > " +
-            final_ +
-            "</a></td>\
+		<td> <a href='javascript:void(0);' onclick=downloadF('" +route_file +final_ +"') > " +final_ +"</a></td>\
+    <td>"+elt['comment']+"</td>\
 	<td>" +
             String(d).padStart(2, "0") +
             "/" +
@@ -408,6 +421,7 @@ function downloadF(str) {
     });
 */
 function sendFile() {
+  $("#editForm").modal('show');
   var data = {};
   data["user"] = $.cookie("id_logged_user_user");
   data["rdv"] = $.cookie("rdv_to_edit");
@@ -434,17 +448,23 @@ function sendFile() {
       Authorization: "Bearer " + token,
     },
     success: function (response) {
-      alert("Ajout du fichier okay");
+      $("#editForm").modal('hide');
+      alert("Ajout du fichier réeussie");
       getFiles();
       $("#raison").val("");
       $("#doc").val("photo");
     },
+    error: function(response){
+      alert("Echec de l'ajout du fichier");
+      $("#editForm").modal('hide');
+    }
   });
 }
 $("#goFile").on("click", function () {
   sendFile();
 });
 $("#goEditRdv").on("click", function () {
+  $("#editForm").modal('show');
   data = {};
   data["nom_bailleur"] = $("#nom_bailleur").val();
   data["prenom_bailleur"] = $("#prenom_bailleur").val();
@@ -535,10 +555,13 @@ $("#goEditRdv").on("click", function () {
       Authorization: "Bearer " + token,
     },
     success: function (response) {
+      $("#editForm").modal('hide');
       alert("RDV Modifié avec succes");
       getRdvToEditP();
     },
     error: function (response) {
+      $("#editForm").modal('hide');
+      alert("Echec de modification veuillez reéssayer plus tard");
       console.log(response);
     },
   });
@@ -687,6 +710,7 @@ function getRdvC(pris_en_charge = 0) {
       });
     },
     error: function (response) {
+      
       console.log(response);
     },
   });

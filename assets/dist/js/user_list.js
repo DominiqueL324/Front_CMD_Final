@@ -8,6 +8,7 @@ var next = "";
 var prev = "";
 
 function getAllUsers() {
+  $("#waiters").css("display","inline")
   var content = "";
   var url_go = base_local + "/admin_app/users/";
   $.ajax({
@@ -102,6 +103,7 @@ function getAllUsers() {
         );
         i++;
       });
+      $("#waiters").css("display","none")
     },
     error: function (response) {
       console.log(response);

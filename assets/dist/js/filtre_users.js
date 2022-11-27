@@ -200,6 +200,7 @@ var next = "";
 var prev = "";
 var max = 0;
 function filtreUser() {
+  $("#waiters").css("display","inline")
   var i = 1;
   data = {};
   message = "Utilisateurs répondant aux critères suivant; ";
@@ -251,6 +252,7 @@ function filtreUser() {
     },
     data: data,
     success: function (response) {
+      $("#waiters").css("display","none")
       var cas_ = "";
       var classe = "";
       var societe = "";

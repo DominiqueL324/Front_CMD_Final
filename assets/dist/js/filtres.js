@@ -365,7 +365,13 @@ function getAgentF() {
       //console.log(response)
       content =
         "<option value='0'>****************************************</option>";
-      response["results"].forEach((elt) => {
+        var r
+        if(typeof(response['results'])==="undefined"){
+          r = response
+        }else{
+          r = response['results']
+        }
+      r.forEach((elt) => {
         content =
           content +
           "<option value = " +

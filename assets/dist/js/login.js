@@ -26,12 +26,17 @@ function login(){
                     $.cookie("nom_agent","vide")
                 }   
             }
+            if($.cookie("group") == "Agent constat"){
+                $.cookie("id_agent",response["agent_secteur"]["id"]) 
+                var nom = response["agent_secteur"]["nom"]+" "+response["agent_secteur"]["prenom"]
+                $.cookie("nom_agent",nom)
+                $.cookie("id_user_agent",response["agent_secteur"]["id_user"]) 
+            }
             if($.cookie("group") == "Salarie"){
                 
                 if(response["client"]!=null){
                     
                     $.cookie("id_client_sal",response["client"]["id"])
-                    //alert($.cookie("id_client_sal"))
                     $.cookie("nom_client_sal",response["client"]["nom"])
                     $.cookie("prenom_client_sal",response["client"]["prenom"])
                     $.cookie("societe_client_sal",response["client"]["societe"])
@@ -114,13 +119,11 @@ function loadNav(){
         $('#user_link').remove()
     }
     if($.cookie('group') == "Agent secteur"){
-        $('#users_add').empty()
-        $('#users_add').append('<label for="exampleInputEmail1">Role</label>\
-        <select class="form-control undefined" name="role" id="type_user">\
+        $('#type_user').empty()
+        $('#type_user').append('\
           <option value="5">Client Professionnel</option>\
           <option value="6">Client Particulier</option>\
-          <option value="7">Salarie</option>\
-        </select>')
+          <option value="7">Salarie</option>')
         $('#users_edit').remove()
         $('#param_link').remove()
     }

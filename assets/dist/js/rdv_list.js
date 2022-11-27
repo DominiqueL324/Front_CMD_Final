@@ -4,6 +4,7 @@ var max = 0;
 var next = ""
 var prev = ""
 function getAllRdv() {
+  $("#waiters").css("display","inline")
   $.ajax({
     type: "GET",
     url: rdv_add,
@@ -81,6 +82,7 @@ function getAllRdv() {
         );
         i++;
       });
+      $("#waiters").css("display","none")
     },
     error: function (response) {
       console.log(response);

@@ -28,11 +28,7 @@ $("#type_user").on("change", function () {
     $("#sal_bloc2").css("display", "none");
     $("#sal_bloc3").css("display", "none");
   } else {
-    if (
-      $.cookie("group") == "Agent secteur" ||
-      $.cookie("group") == "Agent constat" ||
-      $.cookie("group") == "Audit planneur"
-    ) {
+    if ($.cookie("group") == "Agent secteur" || $.cookie("group") == "Agent constat" || $.cookie("group") == "Audit planneur") {
       getClient();
       $("#sal_bloc2").css("display", "inline");
       $("#sal_bloc3").css("display", "inline");
@@ -105,6 +101,7 @@ function getAs(cas = 1, val = 1, val_ = "1") {
     headers: {
       Authorization: "Bearer " + token,
     },
+    data:{'for_rdv':'ok'},
     success: function (response) {
       //console.log(response)
       content =
@@ -130,7 +127,7 @@ function getAs(cas = 1, val = 1, val_ = "1") {
         $("#as").empty();
         $("#as").append(
           " <label for='exampleInputEmail1'>Agent de secteur</label>\
-                    <select disabled=''  class='form-select form-control form-select-lg' id='as_val'> " +
+                    <select  class='form-select form-control form-select-lg' id='as_val'> " +
             content +
             "</select>"
         );
@@ -166,7 +163,12 @@ function getClient(cas = 0, val = "", val_ = 1,data={}) {
       //console.log(response)
       content =
         "<option value='0'>****************************************</option>";
-      response.forEach((elt) => {
+        if(typeof(response['results'])==="undefined"){
+          r = response
+        }else{
+          r = response['results']
+        }
+      r.forEach((elt) => {
         content =
           content +
           "<option value = " +
@@ -205,6 +207,7 @@ function getClient(cas = 0, val = "", val_ = 1,data={}) {
 function addUser() {
   //purification des erreurs du formulaire
   $("#error_form").css("display", "none");
+  $("#champ_absent").css("display", "none");
   $("#s1_error").css("display", "none");
   $("#s2_error").css("display", "none");
   $("#as_error").css("display", "none");
@@ -222,6 +225,8 @@ function addUser() {
     !$("#telephone").val()
   ) {
     $("#error_form").css("display", "inline");
+    $("#champ_absent").css("display", "inline");
+    $("#editForm").modal('hide')
     return;
   }
   //chargement info basic de l'objet à POST
@@ -319,17 +324,20 @@ function addUser() {
     },
     data: data,
     success: function (response) {
-      alert("Ajout okay");
+      $("#editForm").modal('hide')
+      alert("Ajout réussie");
       clearForm();
       window.location.replace("list.html");
     },
     error: function (response) {
+      $("#editForm").modal('hide')
       alert("Echec de l'ajout verifiez le nom d'utilisateur en doublon");
     },
   });
 }
 function clearForm() {
   $("#error_form").css("display", "none");
+  $("#champ_absent").css("display", "none");
   $("#s1_error").css("display", "none");
   $("#s2_error").css("display", "none");
   $("#as_error").css("display", "none");
@@ -348,6 +356,7 @@ function clearForm() {
   $("#type_user").val("1");
 }
 $("#go").on("click", function () {
+  $("#editForm").modal('show')
   addUser();
 });
 $("#leave").on("click", function () {
@@ -421,7 +430,8 @@ function getUserToEdit() {
           //$("#secteur").empty();
           $("#secteur").css("display", "none");
           $("#as").css("display", "inline");
-          getAs(2, 2, response[0]["agent_secteur"]);
+
+          getAs(2, response[0]['agent_secteur']["id"], response[0]["agent_secteur"]['id']);
         } else {
           $("#as").css("display", "none");
         }
@@ -577,6 +587,8 @@ function getUserToEdit() {
 }
 
 function editUser(cas, prof = 0) {
+  $("#champ_absent").css('display','none')
+  $("#editForm").modal('show')
   var id = "";
   id = $("#boy").val();
   if (prof != 0) {
@@ -611,6 +623,7 @@ function editUser(cas, prof = 0) {
     !$("#telephone").val()
   ) {
     $("#error_form").css("display", "inline");
+    $("#champ_absent").css("display", "inline");
     return;
   }
   data["nom"] = $("#nom").val();
@@ -623,7 +636,7 @@ function editUser(cas, prof = 0) {
   data["is_active"] = $("#statut").val();
   //cas Admin
   if($.cookie('group') == "Administrateur"){
-    data["role"] = parseInt($('#type_user').val()) ;
+    data["role"] = parseInt($('#type_user_edit').val()) ;
   }
 
   //cas des agents
@@ -739,12 +752,13 @@ function editUser(cas, prof = 0) {
     },
     data: data,
     success: function (response) {
+      $("#editForm").modal('hide')
       alert("Modification réussie");
       clearForm();
       window.location.replace("list.html");
     },
     error: function (response) {
-      console.log(response);
+      $("#editForm").modal('hide')
       alert("Echec de modification");
     },
   });
