@@ -26,12 +26,18 @@ function login(){
                     $.cookie("nom_agent","vide")
                 }   
             }
+            if($.cookie("group") == "Agent constat"){
+                $.cookie("id_agent",response["agent_secteur"]["id"]) 
+                var nom = response["agent_secteur"]["nom"]+" "+response["agent_secteur"]["prenom"]
+                $.cookie("nom_agent",nom)
+                $.cookie("id_user_agent",response["agent_secteur"]["id_user"]) 
+            }
             if($.cookie("group") == "Salarie"){
                 
                 if(response["client"]!=null){
-                    
+                    $.cookie("nom_agent",response["client"]["agent_nom"])
+                    $.cookie("prenom_agent",response["client"]["agent_prenom"])                    
                     $.cookie("id_client_sal",response["client"]["id"])
-                    //alert($.cookie("id_client_sal"))
                     $.cookie("nom_client_sal",response["client"]["nom"])
                     $.cookie("prenom_client_sal",response["client"]["prenom"])
                     $.cookie("societe_client_sal",response["client"]["societe"])
@@ -88,38 +94,54 @@ function checkLoged(){
 
 function loadNav(){
     var text = "Bienvenue "+$.cookie("first_name")+" "+$.cookie("name")
-    $("#name_user").text(text)
     
-    if($.cookie('group') == "Administrateur"){
-
-    }
+    text = text +"<br><center>"+$.cookie('group')+"</center>"
+	$("#name_user").html(text)
     if($.cookie('group') == "Salarie"){
-	//alert($.cookie("group:"))
-        $('#user_link').empty()
-        $('#user_link').css("display","none")
-        $('#param_link').empty()
-        $('#param_link').css("display","none")
+        $('#user_link').remove()
+        $('#param_link').remove()
     }
     if($.cookie('group') == "Client pro"){
+        $('#users_edit').remove()
         $('#users_add').empty()
         $('#users_add').append('<label for="exampleInputEmail1">Role</label>\
         <select class="form-control undefined" name="role" id="type_user">\
           <option value="7">Salarie</option>\
         </select>')
-        $('#param_link').empty()
-        $('#param_link').css("display","none")
+        $('#param_link').remove()
+        $('#add_user_link').remove()
+        $('#edit_part').remove()
     }
     if($.cookie('group') == "Client particulier"){
-        $('#user_link').empty()
-        $('#user_link').css("display","none")
-        $('#param_link').empty()
-        $('#param_link').css("display","none")
+        $('#user_link').remove()
+        $('#param_link').remove()
     }
-    if($.cookie('group') == "Agent constat" || $.cookie('group') == "Agent secteur" || $.cookie('group') == "Audit planneur"){
-        $('#param_link').empty()
-        $('#param_link').css("display","none")
+    if($.cookie('group') == "Agent constat"){
+        $('#users_edit').remove()
+        $('#param_link').remove()
+        $('#user_link').remove()
+    }
+    if($.cookie('group') == "Agent secteur"){
+        $('#type_user').empty()
+        $('#type_user').append('\
+          <option value="5">Client Professionnel</option>\
+          <option value="6">Client Particulier</option>\
+          <option value="7">Salarie</option>')
+        $('#users_edit').remove()
+        $('#param_link').remove()
+    }
+    if($.cookie('group') == "Audit planneur"){
+        $('#users_edit').remove()
+        $('#param_link').remove()
+        $('#user_link').remove()
     }
 }
 $("#goLogin").on('click',function(){
     login()
 })
+function asOnly(){
+    if($.cookie('group') == "Client particulier" || $.cookie('group') == "Audit planneur" || $.cookie('group') == "Agent constat" || $.cookie('group') == "Salarie" ){
+        alert("Privilèges insuffisants")
+        window.location.replace("dashboard.html")
+    }
+}

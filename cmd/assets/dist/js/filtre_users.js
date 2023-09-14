@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 var next = "";
 var prev = "";
 var max = 0;
@@ -65,7 +64,7 @@ function filtreUser() {
       response["results"].forEach((elt) => {
         var id_toget = 0;
         if (elt["groups"][0]["group"] == "Administrateur") {
-          id_toget = elt["administrateur"];
+          id_toget = elt["administrateur"]["id"];
         }
         if (elt["groups"][0]["group"] == "Salarie") {
           id_toget = elt["salarie"]["id"];
@@ -122,8 +121,17 @@ function filtreUser() {
             "</span>\
         </td>\
         <td>\
-              <a href='javascript:void(0);' onclick='goWhereEdit(" +id_toget +',"' + elt["groups"][0]["group"] +'"' +')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a href="javascript:void(0);"  onclick=\'goWhereEdit1(' +id_toget +
-              ',"' +elt["groups"][0]["group"] +'"' +')\' ><i class="bi bi-eye" style="color: rgb(136, 102, 119)"></i></a>\
+            <a onclick='goWhereEdit(" +
+            id_toget +
+            ',"' +
+            elt["groups"][0]["group"] +
+            '"' +
+            ')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;;<a  onclick=\'goWhereEdit1(' +
+            id_toget +
+            ',"' +
+            elt["groups"][0]["group"] +
+            '"' +
+            ')\' ><i class="bi bi-eye" style="color: rgb(136, 102, 119)"></i></a>\
         </td>\
         </tr>'
         );
@@ -175,7 +183,7 @@ function onload() {
                       <select class="form-control" name="role" id="role">\
                         <option value="0">Role</option>\
                         <option value="Agent constat">Agent Constat</option>\
-                        <option value="Client particulier">Client particulier</option>\
+                        <option value="Audit planneur">Audit planneur</option>\
                         <option value="Client pro">Client Pro</option>\
                         <option value="Salarie">Salarié </option>\
                       </select>'
@@ -188,12 +196,11 @@ function onload() {
     $("#role_list").remove();
   }
 }
-
-=======
 var next = "";
 var prev = "";
 var max = 0;
 function filtreUser() {
+  $("#waiters").css("display","inline")
   var i = 1;
   data = {};
   message = "Utilisateurs répondant aux critères suivant; ";
@@ -245,6 +252,7 @@ function filtreUser() {
     },
     data: data,
     success: function (response) {
+      $("#waiters").css("display","none")
       var cas_ = "";
       var classe = "";
       var societe = "";
@@ -256,7 +264,7 @@ function filtreUser() {
       response["results"].forEach((elt) => {
         var id_toget = 0;
         if (elt["groups"][0]["group"] == "Administrateur") {
-          id_toget = elt["administrateur"];
+          id_toget = elt["administrateur"]["id"];
         }
         if (elt["groups"][0]["group"] == "Salarie") {
           id_toget = elt["salarie"]["id"];
@@ -313,8 +321,17 @@ function filtreUser() {
             "</span>\
         </td>\
         <td>\
-              <a href='javascript:void(0);' onclick='goWhereEdit(" +id_toget +',"' + elt["groups"][0]["group"] +'"' +')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a href="javascript:void(0);"  onclick=\'goWhereEdit1(' +id_toget +
-              ',"' +elt["groups"][0]["group"] +'"' +')\' ><i class="bi bi-eye" style="color: rgb(136, 102, 119)"></i></a>\
+            <a onclick='goWhereEdit(" +
+            id_toget +
+            ',"' +
+            elt["groups"][0]["group"] +
+            '"' +
+            ')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;;<a  onclick=\'goWhereEdit1(' +
+            id_toget +
+            ',"' +
+            elt["groups"][0]["group"] +
+            '"' +
+            ')\' ><i class="bi bi-eye" style="color: rgb(136, 102, 119)"></i></a>\
         </td>\
         </tr>'
         );
@@ -366,7 +383,7 @@ function onload() {
                       <select class="form-control" name="role" id="role">\
                         <option value="0">Role</option>\
                         <option value="Agent constat">Agent Constat</option>\
-                        <option value="Client particulier">Client particulier</option>\
+                        <option value="Audit planneur">Audit planneur</option>\
                         <option value="Client pro">Client Pro</option>\
                         <option value="Salarie">Salarié </option>\
                       </select>'
@@ -379,5 +396,3 @@ function onload() {
     $("#role_list").remove();
   }
 }
-
->>>>>>> 77d4e93c9e266406c58ca817f4cf636536499386

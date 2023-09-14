@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 function param() {
     data = {}
     if (!$("#inter_id").val() || !$("#stat_id").val()) {
@@ -135,7 +134,6 @@ $('#param_idE').on('click', function() {
 $('#close_btn').on('click',function(){
     $("#editForm").modal('hide')
 })
-=======
 function param() {
     data = {}
     if (!$("#inter_id").val() || !$("#stat_id").val()) {
@@ -272,4 +270,3 @@ $('#param_idE').on('click', function() {
 $('#close_btn').on('click',function(){
     $("#editForm").modal('hide')
 })
->>>>>>> 77d4e93c9e266406c58ca817f4cf636536499386

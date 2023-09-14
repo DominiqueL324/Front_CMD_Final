@@ -1,27 +1,37 @@
 var next = "";
 var prev = "";
-function getAgentManage(as, ap) {
+function getAgentManage(as, ap,secteur) {
   var content = "";
+  data={}
+  if($.cookie('group')=="Agent secteur"){
+    data = {"agent":$.cookie('id_user_logged'),"planneur":"okay"}
+  }
+  if($.cookie('group')=="Audit planneur"){
+    //data = {"agent":secteur,"planneur":"okay","add_secteur":"no"}
+  }
   $.ajax({
     type: "GET",
     url: asurl_not_paginated,
     headers: {
       Authorization: "Bearer " + token,
     },
+    data:data,
     success: function (response) {
-      //console.log(response)
       content = "<option value='0'></option>";
-      response.forEach((elt) => {
-        content =
-          content +
-          "<option value = " +
-          elt["user"]["id"] +
-          ">" +
-          elt["user"]["nom"] +
-          "  " +
-          elt["user"]["prenom"] +
-          "</option>";
+      var r 
+      if(typeof(response['results'])==="undefined" ){
+        r = response
+      }else{
+        r = response['results']
+      }
+      r.forEach((elt) => {
+        if(elt["user"]['group'] == "Audit planneur"){
+          content = content+ "<option value = " + elt["user"]["id"] +">" +"Planneur "+elt["user"]["nom"] +"  " +elt["user"]["prenom"] +"</option>"
+        }else{
+          content =content + "<option value = " + elt["user"]["id"] +">" +elt["user"]["nom"] +"  " +elt["user"]["prenom"] +"</option>";
+        }
       });
+      
 
       $("#planneur_select").empty();
       $("#planneur_select").append(
@@ -57,7 +67,10 @@ function getAgentManage(as, ap) {
     },
   });
 }
+
+
 function getRdvToEditP() {
+
   $.ajax({
     type: "GET",
     url: rdv_add + $.cookie("rdv_to_edit").toString(),
@@ -99,26 +112,32 @@ function getRdvToEditP() {
       $("#date_plan").val(formattedDate);
       //$('#heure').val(time_.split('Z')[0])
 
-      $("#ref_edl").val(response[0]["ref_rdv_edl"]);
+      $("#ref_edl").val(response[0]["id"]);
       $("#adresse_ancien_locataire").val(
         response[0]["propriete"]["ancien_locataire"]
       );
-      getInterventionandPropriete(
+      if(response[0]['intervention'] != null){
+	      getInterventionandPropriete(
         1,
         (val_ = response[0]["intervention"]["id"]),
-        response[0]["propriete"]["type_propriete"]["id"]
-      );
+        response[0]["propriete"]["type_propriete"]["id"])
+
+      }else{
+	getInterventionandPropriete(1,response[0]["propriete"]["type_propriete"]["id"]);
+      }	      
+      //getInterventionandPropriete(1,response[0]["propriete"]["type_propriete"]["id"]);
       $("#type").val(response[0]["propriete"]["type"]);
       $("#consignes_part").val(response[0]["consignes_particuliere"]);
       $("#list_documents").val(response[0]["liste_document_recuperer"]);
       $("#info_diverses").val(response[0]["info_diverses"]);
+      
       if (response[0]["client"] != null) {
         getClient(response[0]["client"]["user"]["id"], (val_ = 1));
       }
       if (response[0]["passeur"] != null) {
-        getPasseur((cas = response[0]["passeur"][0]["user"]["id"]));
+        getPasseur(cas = response[0]["passeur"][0]["user"]["id"],add=1,client=response[0]["client"]["user"]["id"]);
       } else {
-        getPasseur((cas = 0));
+        getPasseur(cas = 0,add=1,client=response[0]["client"]["user"]["id"]);
       }
       if (response[0]["agent"] != null) {
         getAgent((cas = 1), (val_ = response[0]["agent"]["user"]["id"]));
@@ -181,18 +200,19 @@ function getRdvToEditP() {
         });
       }
       var ap = "";
-      var as = "";
+      var ac = "";
+      var secteur = response[0]["agent"]['id']
       if (response[0]["audit_planneur"] == null) {
         ap = null;
       } else {
         ap = response[0]["audit_planneur"]["user"]["id"];
       }
       if (response[0]["agent_constat"] == null) {
-        as = null;
+        ac = null;
       } else {
-        as = response[0]["agent_constat"]["user"]["id"];
+        ac = response[0]["agent_constat"]["user"]["id"];
       }
-      getAgentManage(as, ap);
+      getAgentManage(ac, ap,secteur);
       getCommentaires();
       getFiles();
       $("#statut").val(parseInt(response[0]["statut"]).toString()).change();
@@ -226,12 +246,15 @@ function getRdvToEditP() {
         $("#affectation").removeAttr("style");
         $("#validation").removeAttr("style");
       }
+      if($.cookie('group')=="Agent constat"){
+        $("#btnPlanneur").css("display", "none");
+      }
     },
     error: function (response) {
       console.log(response);
     },
   });
-}
+ }
 function getCommentaires() {
   $.ajax({
     type: "GET",
@@ -243,7 +266,6 @@ function getCommentaires() {
     success: function (response) {
       $("idComment").val("");
       $("#contentTableComments").empty();
-      console.log(response);
       response.forEach((elt) => {
         var formattedDate = new Date(elt["date"]);
         var d = formattedDate.getDate();
@@ -268,7 +290,11 @@ function getCommentaires() {
             "/" +
             y +
             '</td>\
-            </tr>'
+                        <td>\
+                            <a href><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>\
+                        </td>\
+                        <td></td>\
+                    </tr>'
         );
       });
     },
@@ -278,6 +304,7 @@ function getCommentaires() {
   });
 }
 function sendCommend() {
+  $("#editForm").modal('show');
   var method = "";
   var url = "";
   var data = {};
@@ -299,11 +326,16 @@ function sendCommend() {
       Authorization: "Bearer " + token,
     },
     success: function (response) {
+      $("#editForm").modal('hide');
       alert("Opération sur le commentaire effectuée avec succès");
       $("#comentaire").val("");
       $("#idComment").val("");
       getCommentaires();
     },
+    error: function(response){
+      $("#editForm").modal('hide');
+      alert("Opération sur le commentaire Echouée veuillez reéssayer plus tard");
+    }
   });
 }
 $("#goCommentaire").on("click", function () {
@@ -359,13 +391,13 @@ function getFiles() {
             "</td>\
                         <td>" +
             elt["Type"] +
+            
             "</td>\
-		<td> <a href='javascript:void(0);' onclick=downloadF('" +
-            route_file +
-            final_ +
-            "') > " +
-            final_ +
-            "</a></td>\
+		        <td> <a href='"+route_file +final_+"' > " +final_ +"</a></td>\
+            <td>\
+            <a href='"+route_file1 +final_ +"' target='_blank' ><i class='fa fa-eye' aria-hidden='true'></i></a>\
+            </td>\
+    <td>"+elt['comment']+"</td>\
 	<td>" +
             String(d).padStart(2, "0") +
             "/" +
@@ -398,6 +430,7 @@ function downloadF(str) {
     });
 */
 function sendFile() {
+  $("#editForm").modal('show');
   var data = {};
   data["user"] = $.cookie("id_logged_user_user");
   data["rdv"] = $.cookie("rdv_to_edit");
@@ -424,17 +457,23 @@ function sendFile() {
       Authorization: "Bearer " + token,
     },
     success: function (response) {
-      alert("Ajout du fichier okay");
+      $("#editForm").modal('hide');
+      alert("Ajout du fichier réeussie");
       getFiles();
       $("#raison").val("");
       $("#doc").val("photo");
     },
+    error: function(response){
+      alert("Echec de l'ajout du fichier");
+      $("#editForm").modal('hide');
+    }
   });
 }
 $("#goFile").on("click", function () {
   sendFile();
 });
 $("#goEditRdv").on("click", function () {
+  $("#editForm").modal('show');
   data = {};
   data["nom_bailleur"] = $("#nom_bailleur").val();
   data["prenom_bailleur"] = $("#prenom_bailleur").val();
@@ -489,7 +528,7 @@ $("#goEditRdv").on("click", function () {
     $.cookie("group") == "Agent constat" ||
     $.cookie("group") == "Audit planneur"
   ) {
-    data["agent"] = $.cookie("id_user_logged");
+    data["agent"] = $.cookie("id_logged_user_user");
   }
   if ($.cookie("group") == "Administrateur") {
     data["agent"] = $("#agent_val").val();
@@ -499,7 +538,7 @@ $("#goEditRdv").on("click", function () {
     $.cookie("group") == "Client particulier" ||
     $.cookie("group") == "Salarie"
   ) {
-    data["agent"] = $.cookie("id_logged_user_user");
+    data["agent"] = $.cookie("id_user_agent")
   }
   data["type_propriete"] = $("#propriete_val").val();
   data["type"] = $("#type").val();
@@ -511,7 +550,7 @@ $("#goEditRdv").on("click", function () {
     $.cookie("group") == "Client pro" ||
     $.cookie("group") == "Client particulier"
   ) {
-    data["client"] = $.cookie("id_user_logged");
+    $.cookie("id_logged_user_user");
   }
   if ($.cookie("group") == "Salarie") {
     data["passeur"] = $.cookie("id_logged_user_user");
@@ -525,10 +564,13 @@ $("#goEditRdv").on("click", function () {
       Authorization: "Bearer " + token,
     },
     success: function (response) {
+      $("#editForm").modal('hide');
       alert("RDV Modifié avec succes");
       getRdvToEditP();
     },
     error: function (response) {
+      $("#editForm").modal('hide');
+      alert("Echec de modification veuillez reéssayer plus tard");
       console.log(response);
     },
   });
@@ -591,7 +633,8 @@ $("#goDate").on("click", function () {
 });
 
 function getRdvC(pris_en_charge = 0) {
-  var data = {};
+   $("#waiters").css("display","inline")
+   var data = {};
   if (pris_en_charge == 1) {
     data["en_charge"] = 1;
   } else {
@@ -615,6 +658,8 @@ function getRdvC(pris_en_charge = 0) {
         var formattedDate = new Date(elt["date"]);
         var d = formattedDate.getDate();
         var m = formattedDate.getMonth();
+	var hr = formattedDate.getHours()-1
+       var  min_ =formattedDate.getMinutes()      
         m += 1; // JavaScript months are 0-11
         var y = formattedDate.getFullYear();
         var couleur;
@@ -630,53 +675,34 @@ function getRdvC(pris_en_charge = 0) {
         if (parseInt(elt["statut"]) == 4) {
           couleur = "rgb(93, 255, 101)";
         }
+	var intervention = "Non Assignée"
+
+        if(elt["intervention"] != null){
+          intervention = elt["intervention"]["type"]
+        }      
 
         $("#contentTableRdv").append(
-          '<tr style="background-color:' +
-            couleur +
-            '; color:white;">\
-                        <td>' +
-            i +
-            "</td>\
-                        <td>" +
-            String(d).padStart(2, "0") +
-            "/" +
-            String(m).padStart(2, "0") +
-            "/" +
-            y +
-            "</td>\
-                        <td>" +
-            elt["client"]["societe"] +
-            "</td>\
-                        <td>" +
-            elt["ref_lot"] +
-            "</td>\
-                        <td>" +
-            elt["ref_rdv_edl"] +
-            '</td>\
-                        <td class="text-center">\
-                            <span class="badge badge-success">' +
-            elt["intervention"]["type"] +
-            '</span>\
-                        </td>\
-                        <td class="text-center">\
-                            <span class="badge badge-primary">' +
-            elt["propriete"]["type_propriete"]["type"] +
-            "</span>\
-                        </td>\
-                        <td>\
-                            <a href='javascript:void(0);'  onclick='goWhereEdit(" +
-            elt["id"] +
-            ')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a href="javascript:void(0);"  onclick=\'goWhereEdit1(' +
-            elt["id"] +
-            ')\'><i class="fa fa-calendar" aria-hidden="true" style="color: rgb(136, 102, 119)"></i></a>\
-                        </td>\
-                    </tr>'
+          '<tr style="background-color:' +couleur +'; color:white;">\
+            <td>' +i + "</td>\
+            <td>" +String(d).padStart(2, "0") +"/" +String(m).padStart(2, "0") +"/" +y +" "+String(hr).padStart(2, "0")+"h:"+String(min_).padStart(2, "0")+"</td>\
+            <td>" +elt["client"]["societe"] +"</td>\
+            <td>" +elt["ref_lot"] +"</td>\
+            <td>" +elt["agent"]["trigramme"] +"</td>\
+            <td>" +elt["id"] +'</td>\
+            <td>' +elt["propriete"]["bailleur"]["nom"] +" "+elt["propriete"]["bailleur"]["prenom"]+'</td>\
+            <td>' +elt["propriete"]["locataire"]["nom"] +" "+ elt["propriete"]["locataire"]["prenom"]+'</td>\
+            <td> <span class="badge badge-success">' +intervention +'</span></td>\
+            <td><span class="badge badge-primary">' +elt["propriete"]["type_propriete"]["type"] +"</span></td>\
+		<td>" +elt["propriete"]["ville"]+"</td>\
+            <td><a  onclick='goWhereEdit(" +elt["id"] +')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a onclick=\'goWhereEdit1(' +elt["id"] +')\'><i class="fa fa-calendar" aria-hidden="true" style="color: rgb(136, 102, 119)"></i></a></td>\
+            </tr>'
         );
         i++;
       });
+      $("#waiters").css("display","none")
     },
     error: function (response) {
+      
       console.log(response);
     },
   });

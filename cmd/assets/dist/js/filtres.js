@@ -1,13 +1,21 @@
 var next = ""
 var prev = ""
 var max = 0;
+
+
 function filtreRdv() {
+  $("#waiters").css("display","inline")
   var i = 1;
   data = {};
   message = "Rendez-vous répondant aux critères suivant; ";
   if ($("#etat").val() != "0") {
     data["statut"] = $("#etat").val();
-    message = message + "statut: " + $("#etat option:selected").text();
+    message = message + "statut: <strong> " + $("#etat option:selected").text()+" </strong>";
+  }
+
+  if ($("#filtre_manuelle").val()) {
+    data["valeur"] = $("#filtre_manuelle").val();
+    message = message + "Saisie manuelle: <strong> " + $("#filtre_manuelle").val()+" </strong>";
   }
 
   if ($("#debut").val() != "") {
@@ -19,12 +27,12 @@ function filtreRdv() {
     var y = formattedDate.getFullYear();
     message =
       message +
-      " date debut: " +
+      " date debut: <strong> " +
       String(d).padStart(2, "0") +
       "/" +
       String(m).padStart(2, "0") +
       "/" +
-      y;
+      y+" </strong>";
   }
   if ($("#fin").val() != "") {
     data["fin"] = $("#fin").val();
@@ -35,51 +43,61 @@ function filtreRdv() {
     var y = formattedDate.getFullYear();
     message =
       message +
-      " date fin: " +
+      " date fin: <strong> " +
       String(d).padStart(2, "0") +
       "/" +
       String(m).padStart(2, "0") +
       "/" +
-      y;
+      y+" </strong>";
   }
 
   if ($.cookie("group") == "Salarie") {
     data["salarie"] = $.cookie("id_logged_user_user");
     message =
-      message + " passeur : " + $("#passeur_val option:selected").text();
+      message + " passeur : <strong> " + $("#passeur_val option:selected").text()+" </strong>";
   }
-  if (
-    $.cookie("group") == "Agent constat" ||
-    $.cookie("group") == "Agent secteur"
-  ) {
+  if( $.cookie("group") == "Agent constat"){
+    data["ac"] = $.cookie("id_logged_user_user");
+    if ($("#client_val").val() != 0) {
+      data["client"] = $("#client_val").val();
+      message = message + " client: <strong> " + $("#client_val option:selected").text()+" </strong>";
+    }
+    if ($("#role").val() != 0) {
+      data["role"] = $("#role").val();
+      message = message + " role: <strong> " + $("#role option:selected").text()+" </strong>";
+    }
+
+  }
+  if ( $.cookie("group") == "Agent secteur") {
+
     data["agent"] = $.cookie("id_logged_user_user");
 
     if ($("#client_val").val() != 0) {
       data["client"] = $("#client_val").val();
-      message = message + " client: " + $("#client_val option:selected").text();
+      message = message + " client: <strong> " + $("#client_val option:selected").text()+" </strong>";
     }
 
     if ($("#role").val() != 0) {
       data["role"] = $("#role").val();
-      message = message + " role: " + $("#role option:selected").text();
+      message = message + " role: <strong> " + $("#role option:selected").text()+" </strong>";
     }
   }
   if ($.cookie("group") == "Administrateur" || $.cookie("group") == "Audit planneur")
    {
     if ($("#client_val").val() != 0) {
       data["client"] = $("#client_val").val();
-      message = message + "client: " + $("#client_val option:selected").text();
+      message = message + "client: <strong> " + $("#client_val option:selected").text()+" </strong>";
     }
 
     if ($("#agent_val").val() != 0) {
       data["agent"] = $("#agent_val").val();
-      message = message + " agent: " + $("#agent_val option:selected").text();
+      message = message + " agent: <strong> " + $("#agent_val option:selected").text()+" </strong>";
     }
 
     if ($("#passeur_val").val() != 0) {
       data["salarie"] = $("#passeur_val").val();
       message =
-        message + " passeur : " + $("#passeur_val option:selected").text();
+        message + " passeur : <strong> " + $("#passeur_val option:selected").text()+" </strong>";
     }
   }
 
@@ -87,7 +105,7 @@ function filtreRdv() {
     $.cookie("group") == "Client pro" ||
     $.cookie("group") == "Client particulier"
   ) {
-    data["client"] = $.cookie("id_user_logged");
+    data["client"] =$.cookie('id_logged_user_user');
   }
   data["user"] = data["role"] = $.ajax({
     type: "GET",
@@ -99,12 +117,14 @@ function filtreRdv() {
     success: function (response) {
       max_ = Math.round(parseInt(response["count"]) / 10) + 1;
       next = response["next"]
-      prev = response["previous"]	    
+      prev = response["previous"]
       $("#contentTableRdv").empty();
       response["results"].forEach((elt) => {
         var formattedDate = new Date(elt["date"]);
         var d = formattedDate.getDate();
         var m = formattedDate.getMonth();
+        var hr = formattedDate.getHours()-1
+        var min_ =formattedDate.getMinutes()
         m += 1; // JavaScript months are 0-11
         var y = formattedDate.getFullYear();
         var couleur;
@@ -120,61 +140,43 @@ function filtreRdv() {
         if (parseInt(elt["statut"]) == 4) {
           couleur = "rgb(93, 255, 101)";
         }
+        var intervention = "Non Assignée"
+        if(elt["intervention"] != null){
+            intervention = elt["intervention"]["type"]
+        }
 
-        $("#contentTableRdv").append(
-          '<tr style="background-color:' +
-            couleur +
-            '; color:white;">\
-                        <td>' +
-            i +
-            "</td>\
-                        <td>" +
-            String(d).padStart(2, "0") +
-            "/" +
-            String(m).padStart(2, "0") +
-            "/" +
-            y +
-            "</td>\
-                        <td>" +
-            elt["client"]["societe"] +
-            "</td>\
-                        <td>" +
-            elt["ref_lot"] +
-            "</td>\
-                        <td>" +
-            elt["ref_rdv_edl"] +
-            '</td>\
-                        <td class="text-center">\
-                            <span class="badge badge-success">' +
-            elt["intervention"]["type"] +
-            '</span>\
-                        </td>\
-                        <td class="text-center">\
-                            <span class="badge badge-primary">' +
-            elt["propriete"]["type_propriete"]["type"] +
-            "</span>\
-                        </td>\
-                        <td>\
-                            <a  onclick='goWhereEdit(" +
-            elt["id"] +
-            ')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a onclick=\'goWhereEdit1(' +
-            elt["id"] +
-            ')\'><i class="fa fa-calendar" aria-hidden="true" style="color: rgb(136, 102, 119)"></i></a>\
-                        </td>\
-                    </tr>'
+	$("#contentTableRdv").append(
+          '<tr style="background-color:' +couleur +'; color:white;">\
+            <td>' +i + "</td>\
+            <td>" +String(d).padStart(2, "0") +"/" +String(m).padStart(2, "0") +"/" +y +" "+String(hr).padStart(2, "0")+"h:"+String(min_).padStart(2, "0")+"</td>\
+            <td>" +elt["client"]["societe"] +"</td>\
+            <td>" +elt["ref_lot"] +"</td>\
+            <td>" +elt["agent"]["trigramme"] +"</td>\
+	    <td>" +elt["id"] +'</td>\
+            <td>' +elt["propriete"]["bailleur"]["nom"] +" "+elt["propriete"]["bailleur"]["prenom"]+'</td>\
+            <td>' +elt["propriete"]["locataire"]["nom"] +" "+ elt["propriete"]["locataire"]["prenom"]+'</td>\
+            <td> <span class="badge badge-success">' +intervention +'</span></td>\
+            <td><span class="badge badge-primary">' +elt["propriete"]["type_propriete"]["type"] +"</span></td>\
+            <td>" +elt["propriete"]["ville"]+"</td>\
+            <td><a  onclick='goWhereEdit(" +elt["id"] +')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a onclick=\'goWhereEdit1(' +elt["id"] +')\'><i class="fa fa-calendar" aria-hidden="true" style="color: rgb(136, 102, 119)"></i></a></td>\
+            </tr>'
         );
 
         i++;
       });
       $("#text_ok").text("");
-      $("#text_ok").text(message);
+      $("#text_ok").html(message);
       $("#result").css("display", "inline");
+	    $("#waiters").css("display","none")
     },
     error: function (response) {
       alert("Echec de récupération des rendez-vous");
     },
   });
 }
+
+
+
 $("#find").on("click", function () {
   cas_rdv = 1
   filtreRdv();
@@ -347,6 +349,7 @@ function getPasseurF() {
 
 function getAgentF() {
   data = {};
+  url = asurl_not_paginated	
   if (
     $.cookie("group") == "Agent secteur" ||
     $.cookie("group") == "Agent constat" ||
@@ -354,9 +357,12 @@ function getAgentF() {
   ) {
     data["agent"] = $.cookie("id_user_logged");
   }
+  if($.cookie('group')=="Administrateur"){
+    url = url +"&for_rdv=ok"
+  }	
   $.ajax({
     type: "GET",
-    url: asurl_paginated,
+    url: url,
     headers: {
       Authorization: "Bearer " + token,
     },
@@ -365,7 +371,13 @@ function getAgentF() {
       //console.log(response)
       content =
         "<option value='0'>****************************************</option>";
-      response["results"].forEach((elt) => {
+        var r
+        if(typeof(response['results'])==="undefined"){
+          r = response
+        }else{
+          r = response['results']
+        }
+      r.forEach((elt) => {
         content =
           content +
           "<option value = " +
@@ -415,3 +427,90 @@ function onload() {
     getPasseurF();
   }
 }
+
+function filtresKeyUpRDV(){
+  data = {}
+  if($.cookie('group')=="Agent secteur"){
+    data['as'] = $.cookie('id_logged_user_user')
+  }
+  if($.cookie('group')=="Agent constat"){
+    data['ac'] = $.cookie('id_logged_user_user')
+  }
+  if($.cookie('group')=="Client pro" || $.cookie('group')=="Client particulier") {
+    data['cl'] = $.cookie('id_logged_user_user')
+  }
+  if($.cookie('group')=="Salarie") {
+    data['sal'] = $.cookie('id_logged_user_user')
+  }
+  data['valeur'] = $('#filtre_manuelle').val()
+
+  $.ajax({
+    type: "GET",
+    url: filtre_rdv_url,
+    headers: {
+      Authorization: "Bearer " + token,
+    },
+    data: data,
+    success: function (response) {
+      max_ = Math.round(parseInt(response["count"]) / 10) + 1;
+      next = response["next"]
+      prev = response["previous"]
+      $("#contentTableRdv").empty();
+      var i = 1
+      response["results"].forEach((elt) => {
+        var formattedDate = new Date(elt["date"]);
+        var d = formattedDate.getDate();
+        var m = formattedDate.getMonth();
+        hr = formattedDate.getHours()
+        min_ =formattedDate.getMinutes()
+        m += 1; // JavaScript months are 0-11
+        var y = formattedDate.getFullYear();
+        var couleur;
+        if (parseInt(elt["statut"]) == 1) {
+          couleur = "rgb(241, 67, 67)";
+        }
+        if (parseInt(elt["statut"]) == 2) {
+          couleur = "rgb(255, 166, 93)";
+        }
+        if (parseInt(elt["statut"]) == 3) {
+          couleur = "rgb(93, 182, 255)";
+        }
+        if (parseInt(elt["statut"]) == 4) {
+          couleur = "rgb(93, 255, 101)";
+        }
+        var intervention = "Non Assignée"
+        if(elt["intervention"] != null){
+            intervention = elt["intervention"]["type"]
+        }
+
+        $("#contentTableRdv").append(
+          '<tr style="background-color:' +couleur +'; color:white;">\
+            <td>' +i + "</td>\
+            <td>" +String(d).padStart(2, "0") +"/" +String(m).padStart(2, "0") +"/" +y +" "+String(hr).padStart(2, "0")+"h:"+String(min_).padStart(2, "0")+"</td>\
+            <td>" +elt["client"]["societe"] +"</td>\
+            <td>" +elt["ref_lot"] +"</td>\
+            <td>" +elt["agent"]["trigramme"] +"</td>\
+            <td>" +elt["id"] +'</td>\
+            <td>' +elt["propriete"]["bailleur"]["nom"] +" "+elt["propriete"]["bailleur"]["prenom"]+'</td>\
+            <td>' +elt["propriete"]["locataire"]["nom"] +" "+ elt["propriete"]["locataire"]["prenom"]+'</td>\
+            <td> <span class="badge badge-success">' +intervention +'</span></td>\
+            <td><span class="badge badge-primary">' +elt["propriete"]["type_propriete"]["type"] +"</span></td>\
+		<td>" +elt["propriete"]["ville"]+"</td>\
+            <td><a  onclick='goWhereEdit(" +elt["id"] +')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a onclick=\'goWhereEdit1(' +elt["id"] +')\'><i class="fa fa-calendar" aria-hidden="true" style="color: rgb(136, 102, 119)"></i></a></td>\
+            </tr>'
+        );
+
+        i++;
+      });
+      $('#waiters').css("display", "none");
+    },
+    error: function (response) {
+      $('#waiters').css("display", "none");
+      alert("Echec de récupération des rendez-vous");
+    },
+  });
+}
+$('#findMan').on('click',function(){
+  $('#waiters').css("display", "inline");
+  filtresKeyUpRDV()
+})

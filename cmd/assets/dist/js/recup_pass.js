@@ -1,4 +1,4 @@
-var Url = "http://195.15.218.172"
+var Url = "http://195.15.228.250"
 function getData(){
     $('#pass_error').css('display','none')
     $.ajax({

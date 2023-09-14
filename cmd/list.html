@@ -61,7 +61,7 @@
                 class="nav-link"
                 data-widget="pushmenu"
                 role="button"
-                href="/utilisateurs"
+                href="#"
                 ><i class="fas fa-bars"></i
               ></a>
             </li>
@@ -133,7 +133,7 @@
                                       >
                                     </li>
                                     <li class="sub-menu nav-item" style="display: inline;" id="rdv_link">
-                                      <a class="nav-link" href="/utilisateurs"
+                                      <a class="nav-link" href="#"
                                         ><i class="bi bi-calendar-event"></i>
                                         <p>Commande</p>
                                         <i class="fas fa-angle-left right"></i
@@ -154,13 +154,13 @@
                                       </ul>
                                     </li>
                                     <li class="sub-menu nav-item menu-is-opening menu-open" style="display: inline;" id="user_link">
-                                      <a class="nav-link active" href="/utilisateurs"
+                                      <a class="nav-link active" href="#"
                                         ><i class="bi bi-people"></i>
                                         <p>Utilisateurs</p>
                                         <i class="fas fa-angle-left right"></i
                                       ></a>
                                       <ul class="nav nav-treeview" style="display: block">
-                                        <li class="nav-item">
+                                        <li class="nav-item" id="add_user_link">
                                           <a class="nav-link" href="ajouter-un-utilisateur.html"
                                             ><i class="bi bi-person-plus"></i>
                                             <p>Ajouter un utilisateur</p></a
@@ -176,7 +176,7 @@
                                     </li>
                                     <li class="sub-menu nav-item menu-is-opening 
                                                     menu-open" style="display: inline;" id="plannification_link">
-                                                      <a class="nav-link active" href="/#"><i class="bi bi-gear"></i>
+                                                      <a class="nav-link active" href="#"><i class="bi bi-gear"></i>
                                                           <p>Planification</p>
                                                           <i class="fas fa-angle-left right"></i>
                                                      </a>
@@ -195,7 +195,7 @@
                                     </li>
                                     
                                       <li class="sub-menu nav-item" id="param_link" style="display: inline;">
-                                      <a class="nav-link" href="/utilisateurs"
+                                      <a class="nav-link" href="#"
                                         ><i class="bi bi-gear"></i>
                                         <p>Paramètres</p>
                                         <i class="fas fa-angle-left right"></i
@@ -261,6 +261,34 @@
           </div>
           <section class="content">
             <div class="container-fluid">
+              <div class="row" style="display: inline;" id="waiters">
+                <center>
+                  <div class="spinner-grow text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                  </div>
+                  <div class="spinner-grow text-secondary" role="status">
+                    <span class="sr-only">Loading...</span>
+                  </div>
+                  <div class="spinner-grow text-success" role="status">
+                    <span class="sr-only">Loading...</span>
+                  </div>
+                  <div class="spinner-grow text-danger" role="status">
+                    <span class="sr-only">Loading...</span>
+                  </div>
+                  <div class="spinner-grow text-warning" role="status">
+                    <span class="sr-only">Loading...</span>
+                  </div>
+                  <div class="spinner-grow text-info" role="status">
+                    <span class="sr-only">Loading...</span>
+                  </div>
+                  <div class="spinner-grow text-warning" role="status">
+                    <span class="sr-only">Loading...</span>
+                  </div>
+                  <div class="spinner-grow text-dark" role="status">
+                    <span class="sr-only">Loading...</span>
+                  </div>
+                </center>
+              </div>
               <div class="row">
                 <div class="col-12">
                   <div class="card">
@@ -279,23 +307,15 @@
                           </select>
                         
                       </div>
-                      <div class=" col-2 form-group" >
-			<br>
-                        <a href="#" class="btn btn-primary" id="find"> Rechercher</a>
-                      </div>
-
-		      <div class="col-4 form-group" id="role_group">
-                        <label for="ref_edl">Recherche libre (à la saisie) </label>
-                          <input type="text" name="table_search" class="form-control " placeholder="Recherche" id="filtre"/>
-                      </div>
-
-                      </div>
-                      
-
-                      <h3 class="card-title"></h3>
-                      <div class="card-tools">
-                        
-                      </div>
+                        <div class="col-2 form-group">
+                          <a href="#" class="btn btn-primary" style="margin-top: 30px;" id="find"> Rechercher</a>
+                        </div>
+                        <div class="col-6">
+                          <div class="input-group" style="margin-top: 30px;">
+                            <input type="text" class="form-control" placeholder="Saisie manuelle" id="filtre" aria-describedby="button-addon2">
+                            <button class="btn btn-primary" type="button" id="findMan">Rechercher</button>
+                          </div>
+                        </div>
                     </div>
                     <div class="card-body">
                       <table class="table table-striped">
@@ -393,12 +413,9 @@
     <script>
       checkLoged()
       loadNav()
+      asOnly()
       onload()
       getAllUsers();
-      window.onload = function(){
-        //loadNav()
-      }
-
     </script>
   </body>
 </html>

@@ -13,7 +13,7 @@ function configCal() {
     headerToolbar: {
       left: "prev,next",
       center: "title",
-      right: "dayGridMonth,timeGridWeek,timeGridDay",
+      right: "dayGridMonth",
     },
     datesSet: function (info) {
       evt = getEvent(info.startStr.split("T")[0], info.endStr.split("T")[0]);
@@ -29,16 +29,20 @@ function configCal() {
       $(".fc-today-button").text("Aujourd'hui");
     },
     eventMouseEnter: function (info) {
+      date = info.event.start
+      console.log(date)	    
+      var month = String(date.getUTCMonth() + 1).padStart(2, "0"); //months from 1-12
+      var day = String(date.getDate()).padStart(2, "0");
+      var year = date.getUTCFullYear()
+      dte = day+"/"+month+"/"+year
       tooltip =
         '<div class="tooltiptopicevent" style="opacity:1;width:auto;height:auto;background:#feb811;position:absolute;z-index:10001;padding:10px 10px 10px 10px ;  line-height: 200%;">' +
         "RDV: " +
-        ": " +
+        " " +
         info.event.title +
         "</br>" +
         "Date: " +
-        ": " +
-        info.event.start +
-        "</div>";
+        " " +dte+" Heure: "+info.event.extendedProps.minTime.split(":")[0]+":"+info.event.extendedProps.minTime.split(":")[1]+"</div>";
 
       $("body").append(tooltip);
       $(this)
@@ -88,9 +92,12 @@ function getEvent(debut, fin) {
         if (elt["agent"] != null) {
           nom_evt = elt["agent"]["trigramme"];
         }
+        var intervention = "Non Assignée"
 
-        nom_evt =
-          nom_evt + "/" + elt["intervention"]["type"].slice(0, 3).toUpperCase();
+        if(elt["intervention"] != null){
+          intervention = elt["intervention"]["type"]
+        }
+        nom_evt = nom_evt + "/" + intervention.slice(0, 3).toUpperCase();
         if (elt["audit_planneur"] != null) {
           nom_evt = nom_evt + "/" + elt["audit_planneur"]["trigramme"];
         }
@@ -115,6 +122,7 @@ function getEvent(debut, fin) {
           id: elt["id"],
           title: nom_evt,
           start: elt["date"].split("T")[0],
+          minTime: elt["date"].split("T")[1],		
           backgroundColor: couleur,
           borderColor: couleur,
         };
@@ -151,8 +159,6 @@ function loadStat() {
         $("#nombre_client").text(response["stats"]["client"]);
         $("#rdv_attente").text(response["stats"]["rdv_attente"]);
         $("#rdv_valide").text(response["stats"]["rdv_valide"]);
-	$("#salarie_nombre").text(response["stats"]["salarie"]);
-      
       }
       if ($.cookie("group") == "Client pro") {
         $("#adminbox").remove();
@@ -203,8 +209,7 @@ function loadStat() {
         $("#agent_nombre").text(response["stats"]["agent"]);
         $("#nombre_client").text(response["stats"]["client"]);
         $("#rdv_attente").text(response["stats"]["rdv_attente"]);
-	$("#salarie_nombre").text(response["stats"]["salarie"]);      
-        //$("#salarie_nombre").text(response["stats"]["salarie"]);
+        $("#salarie_nombre").text(response["stats"]["salarie"]);
         $("#rdv_valide").text(response["stats"]["rdv_valide"]);
       }
 

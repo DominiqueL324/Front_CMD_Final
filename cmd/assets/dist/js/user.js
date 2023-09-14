@@ -28,11 +28,7 @@ $("#type_user").on("change", function () {
     $("#sal_bloc2").css("display", "none");
     $("#sal_bloc3").css("display", "none");
   } else {
-    if (
-      $.cookie("group") == "Agent secteur" ||
-      $.cookie("group") == "Agent constat" ||
-      $.cookie("group") == "Audit planneur"
-    ) {
+    if ($.cookie("group") == "Agent secteur" || $.cookie("group") == "Agent constat" || $.cookie("group") == "Audit planneur") {
       getClient();
       $("#sal_bloc2").css("display", "inline");
       $("#sal_bloc3").css("display", "inline");
@@ -52,6 +48,34 @@ $("#type_user").on("change", function () {
       $("#type_user").val("2");
       alert("Vous ne pouvez pas ajouter de salarié");
     }
+  }
+});
+
+$("#type_user_edit").on("change", function () {
+  if ($("#type_user_edit").val() == "2"
+) {
+    if ($.cookie("group") == "Administrateur") {
+      getAs();
+      $("#as").css("display", "inline");
+    }
+    $("#secteur").css("display", "none");
+    $("#sal_bloc1").css("display", "none");
+    $("#sal_bloc2").css("display", "none");
+    $("#sal_bloc3").css("display", "none");
+  } else if ($("#type_user_edit").val() == "1") {
+    console.log($("#secteur").css("display", "inline"));
+    $("#as").empty();
+    $("#as").css("display", "none");
+    $("#sal_bloc1").css("display", "none");
+    $("#sal_bloc2").css("display", "none");
+    $("#sal_bloc3").css("display", "none");
+  } else{
+    $("#as").empty();
+    $("#as").css("display", "none");
+    $("#secteur").css("display", "none");
+    $("#sal_bloc1").css("display", "none");
+    $("#sal_bloc2").css("display", "none");
+    $("#sal_bloc3").css("display", "none");
   }
 });
 function getboyCl() {
@@ -77,6 +101,7 @@ function getAs(cas = 1, val = 1, val_ = "1") {
     headers: {
       Authorization: "Bearer " + token,
     },
+    data:{'for_rdv':'ok'},
     success: function (response) {
       //console.log(response)
       content =
@@ -102,7 +127,7 @@ function getAs(cas = 1, val = 1, val_ = "1") {
         $("#as").empty();
         $("#as").append(
           " <label for='exampleInputEmail1'>Agent de secteur</label>\
-                    <select disabled=''  class='form-select form-control form-select-lg' id='as_val'> " +
+                    <select  class='form-select form-control form-select-lg' id='as_val'> " +
             content +
             "</select>"
         );
@@ -125,7 +150,7 @@ function getAs(cas = 1, val = 1, val_ = "1") {
   });
 }
 
-function getClient(cas = 0, val = "", val_ = 1) {
+function getClient(cas = 0, val = "", val_ = 1,data={}) {
   var content = "";
   $.ajax({
     type: "GET",
@@ -133,11 +158,17 @@ function getClient(cas = 0, val = "", val_ = 1) {
     headers: {
       Authorization: "Bearer " + token,
     },
+    data:data,
     success: function (response) {
       //console.log(response)
       content =
         "<option value='0'>****************************************</option>";
-      response.forEach((elt) => {
+        if(typeof(response['results'])==="undefined"){
+          r = response
+        }else{
+          r = response['results']
+        }
+      r.forEach((elt) => {
         content =
           content +
           "<option value = " +
@@ -176,6 +207,7 @@ function getClient(cas = 0, val = "", val_ = 1) {
 function addUser() {
   //purification des erreurs du formulaire
   $("#error_form").css("display", "none");
+  $("#champ_absent").css("display", "none");
   $("#s1_error").css("display", "none");
   $("#s2_error").css("display", "none");
   $("#as_error").css("display", "none");
@@ -193,6 +225,8 @@ function addUser() {
     !$("#telephone").val()
   ) {
     $("#error_form").css("display", "inline");
+    $("#champ_absent").css("display", "inline");
+    $("#editForm").modal('hide')
     return;
   }
   //chargement info basic de l'objet à POST
@@ -290,17 +324,20 @@ function addUser() {
     },
     data: data,
     success: function (response) {
-      alert("Ajout okay");
+      $("#editForm").modal('hide')
+      alert("Ajout réussie");
       clearForm();
       window.location.replace("list.html");
     },
     error: function (response) {
+      $("#editForm").modal('hide')
       alert("Echec de l'ajout verifiez le nom d'utilisateur en doublon");
     },
   });
 }
 function clearForm() {
   $("#error_form").css("display", "none");
+  $("#champ_absent").css("display", "none");
   $("#s1_error").css("display", "none");
   $("#s2_error").css("display", "none");
   $("#as_error").css("display", "none");
@@ -319,6 +356,7 @@ function clearForm() {
   $("#type_user").val("1");
 }
 $("#go").on("click", function () {
+  $("#editForm").modal('show')
   addUser();
 });
 $("#leave").on("click", function () {
@@ -371,9 +409,16 @@ function getUserToEdit() {
         $("#telephone").val(response[0]["telephone"]);
         $("#adresse").val(response[0]["adresse"]);
         $("#trigramme").val(response[0]["trigramme"]);
+        
         var nom =
           response[0]["user"]["nom"] + " " + response[0]["user"]["prenom"];
         $("#nom_edit").text(nom);
+        if($.cookie("group")=="Agent secteur"){
+          $('#goEdit').css("display","none")
+          var label = "Visualisation de "+nom
+          $('#titre_pg').html(label)
+          $("#sous_titre_page").html(label)
+      }
         if (response[0]["user"]["group"] == "Agent secteur") {
           $("#as").empty();
           $("#as").css("display", "none");
@@ -382,10 +427,11 @@ function getUserToEdit() {
           $("#secteur").css("display", "inline");
         } else if (response[0]["user"]["group"] == "Agent constat") {
           //getAs()
-          $("#secteur").empty();
+          //$("#secteur").empty();
           $("#secteur").css("display", "none");
           $("#as").css("display", "inline");
-          getAs(2, 2, response[0]["agent_secteur"]);
+
+          getAs(2, response[0]['agent_secteur']["id"], response[0]["agent_secteur"]['id']);
         } else {
           $("#as").css("display", "none");
         }
@@ -486,13 +532,16 @@ function getUserToEdit() {
         $("#ville").val(response[0]["ville"]);
         //$('#code').val(response[0]['code_client'])
         $("#complement_adresse").val(response[0]["complement_adresse"]);
-        $("#secteur").val(
+       if(response[0]['info_concession']['agent_rattache']!= null){
+
+	      $("#secteur").val(
           response[0]["info_concession"]["agent_rattache"]["secteur"] +
             " " +
             response[0]["info_concession"]["agent_rattache"][
               "secteur_secondaire"
             ]
         );
+       }       
         $("#nom_concessionanire").val(
           response[0]["info_concession"]["nom_concessionnaire"]
         );
@@ -508,7 +557,11 @@ function getUserToEdit() {
         $("#asclient").val(response[0]["info_concession"]["as_client"]);
         //$('#statut').val(response[0]["statut_client"])
         $("#mobile").val(response[0]["mobile"]);
-        getAs(2, 2, response[0]["info_concession"]["agent_rattache"]["id"]);
+        if(response[0]['info_concession']['agent_rattache']!= null){
+	 getAs(2, 2, response[0]["info_concession"]["agent_rattache"]["id"]);
+	}else{
+	 getAs(2, 2);
+	}
         $("#as").css("display", "inline");
       } else {
         //cas Salarie
@@ -523,14 +576,13 @@ function getUserToEdit() {
         $("#fonction").val(response[0]["fonction"]);
         $("#mobile").val(response[0]["mobile"]);
         $("#code").val(response[0]["code"]);
-        if(response[0]["client"] != null){
-          $("#company").val(response[0]["client"]["societe"]);
-        }
-        getClient(1, response[0]["client"]["id"]);
+        $("#company").val(response[0]["compani"]);
+        getClient(1, response[0]["client"]["id"],val_=1,data={"paginated":"t"});
         $("#sal_bloc2").css("display", "inline");
         $("#sal_bloc3").css("display", "inline");
         $("#as").empty();
         $("#as").css("display", "none");
+        $('#users_edit').remove()
         $("#secteur").css("display", "none");
         $("#sal_bloc1").css("display", "inline");
       }
@@ -542,6 +594,8 @@ function getUserToEdit() {
 }
 
 function editUser(cas, prof = 0) {
+  $("#champ_absent").css('display','none')
+  //$("#editForm").modal('show')
   var id = "";
   id = $("#boy").val();
   if (prof != 0) {
@@ -555,6 +609,7 @@ function editUser(cas, prof = 0) {
     url = agent_add + id.toString();
   } else if (cas == 2) {
     //cas admin
+    data['old_role']="2"
     url = admin_add + id.toString();
   } else if (cas == 3) {
     //cas client pro
@@ -576,6 +631,7 @@ function editUser(cas, prof = 0) {
     !$("#telephone").val()
   ) {
     $("#error_form").css("display", "inline");
+    $("#champ_absent").css("display", "inline");
     return;
   }
   data["nom"] = $("#nom").val();
@@ -587,28 +643,33 @@ function editUser(cas, prof = 0) {
   data["telephone"] = $("#telephone").val();
   data["is_active"] = $("#statut").val();
   //cas Admin
+  if($.cookie('group') == "Administrateur"){
+    data["role"] = parseInt($('#type_user_edit').val()) ;
+    if(data["role"]=="1"){
+	url = agent_add + id.toString();
+    }	  
+  }
 
   //cas des agents
   if (cas == 1) {
     // Cas Agent de secteur AS
-    if ($("#role").val() == "Agent secteur") {
+    if (parseInt($('#type_user_edit').val()) == 1) {
       if (!$("#secteur_primaire").val()) {
+        alert('erreur secteur primaire')
         $("#s1_error").css("display", "inline");
         return;
       }
       if (!$("#secteur_secondaire").val()) {
+        alert('erreur secteur secondaire')
         $("#s2_error").css("display", "inline");
         return;
       }
       data["secteur_primaire"] = $("#secteur_primaire").val();
       data["secteur_secondaire"] = $("#secteur_secondaire").val();
-      data["role"] = 1;
+      data["role"] = parseInt($('#type_user_edit').val()) ;;
       data["trigramme"] = $("#trigramme").val();
     }
-    if (
-      $("#role").val() == "Agent constat" ||
-      $("#role").val() == "Audit planneur"
-    ) {
+    if (parseInt($('#type_user_edit').val()) == 2 || parseInt($('#type_user_edit').val()) == 3) {
       if ($("#as_val").val() == "0") {
         $("#as_error").css("display", "inline");
         return;
@@ -616,16 +677,17 @@ function editUser(cas, prof = 0) {
       data["agent_secteur"] = $("#as_val").val();
       data["trigramme"] = $("#trigramme").val();
     }
-    if ($("#role").val() == "Agent constat") {
-      data["role"] = 2;
+    if (parseInt($('#type_user_edit').val()) == 2) {
+      data["role"] = parseInt($('#type_user_edit').val())  ;
     }
-    if ($("#role").val() == "Audit planneur") {
-      data["role"] = 3;
+    if (parseInt($('#type_user_edit').val()) == 3) {
+      data["role"] = parseInt($('#type_user_edit').val())  ;
     }
   }
   //cas des clients pro
   if (cas == 3) {
     data["type"] = 1;
+    //data['agent'] = $('as_val').val()	  
     data["email_reponsable"] = $("#email").val();
     data["is_active"] = parseInt($("#statut").val());
     data["adresse"] = $("#adresse").val();
@@ -702,12 +764,13 @@ function editUser(cas, prof = 0) {
     },
     data: data,
     success: function (response) {
+      $("#editForm").modal('hide')
       alert("Modification réussie");
       clearForm();
       window.location.replace("list.html");
     },
     error: function (response) {
-      console.log(response);
+      $("#editForm").modal('hide')
       alert("Echec de modification");
     },
   });
@@ -720,14 +783,3 @@ $("#goEdit").on("click", function () {
 $("#LeaveEdit").on("click", function () {
   window.location.replace("list.html");
 });
-function onload() {
-  if (
-    $.cookie("group") == "Audit planneur" ||
-    $.cookie("group") == "Agent secteur" ||
-    $.cookie("group") == "Agent constat" ||
-    $.cookie("group") == "Client pro" ||
-    $.cookie("group") == "Client particulier"
-  ) {
-    $("#admin_role").remove();
-  }
-}

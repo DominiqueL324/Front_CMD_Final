@@ -12,20 +12,14 @@ $("#telephone_locataire").keyup(function () {
   }
 });
 function getClient(cas = 0, val_ = 1) {
+  $.cookie("client_to_get",cas)
   if ($.cookie("group") == "Salarie" && $.cookie("id_client_sal") == 0) {
-    alert(
-      "Désolé vous n'êtes attaché à aucun client vous ne pouvez pas prendre de commande\nveuillez contacter un administrateur"
-    );
+    alert("Désolé vous n'êtes attaché à aucun client vous ne pouvez pas prendre de commande\nveuillez contacter un administrateur");
     window.location.replace("dashboard.html");
     return;
   }
 
-  if (
-    $.cookie("group") == "Administrateur" ||
-    $.cookie("group") == "Agent secteur" ||
-    $.cookie("group") == "Agent constat" ||
-    $.cookie("group") == "Audit planneur"
-  ) {
+  if ($.cookie("group") == "Administrateur" || $.cookie("group") == "Agent secteur" || $.cookie("group") == "Agent constat" ||$.cookie("group") == "Audit planneur") {
     $.ajax({
       type: "GET",
       url: client_add_not_pg,
@@ -33,7 +27,6 @@ function getClient(cas = 0, val_ = 1) {
         Authorization: "Bearer " + token,
       },
       success: function (response) {
-        console.log(response);
         content = "<option value='0'>SELECTIONNER</option>";
         var r = "";
         if (typeof response["results"] === "undefined") {
@@ -46,18 +39,18 @@ function getClient(cas = 0, val_ = 1) {
             content +
             "<option value = " +
             elt["user"]["id"] +
-            "><strong>" +
+            ">" +
             elt["societe"] +
-            "</strong> <i>" +
+            " " +
             elt["user"]["nom"] +
-            "  " +
+            " --- " +
             elt["user"]["prenom"] +
-            "</i></option>";
+            "</option>";
         });
         $("#client").empty();
         $("#client").append(
           " <label for='exampleInputEmail1'>Client</label>\
-                        <select onchange='getPasseur()' class='form-select form-control form-select-sm' id='client_val'> " +
+            <select onchange='getPasseur()' required class='form-select form-control form-select-sm' id='client_val'> " +
             content +
             "</select>"
         );
@@ -65,7 +58,7 @@ function getClient(cas = 0, val_ = 1) {
           $("#client").empty();
           $("#client").append(
             " <label for='exampleInputEmail1'>Client</label>\
-                        <select disabled='' class='form-select form-control form-select-sm' id='client_val'> " +
+                        <select class='form-select form-control form-select-sm' id='client_val'> " +
               content +
               "</select>"
           );
@@ -75,21 +68,18 @@ function getClient(cas = 0, val_ = 1) {
           $("#client").empty();
           $("#client").append(
             " <label for='exampleInputEmail1'>Client</label>\
-                        <select disabled='' class='form-select form-control form-select-sm' id='client_val'> " +
+                        <select  class='form-select form-control form-select-sm' id='client_val'> " +
               content +
               "</select>"
           );
         }
       },
       error: function (response) {
-        console.log(response);
+        
       },
     });
   }
-  if (
-    $.cookie("group") == "Client pro" ||
-    $.cookie("group") == "client particulier"
-  ) {
+  if ($.cookie("group") == "Client pro" || $.cookie("group") == "client particulier") {
     content = $.cookie("name") + " " + $.cookie("first_name");
     $("#client").empty();
     $("#client").append(
@@ -100,15 +90,30 @@ function getClient(cas = 0, val_ = 1) {
     );
     getPasseur((cas = 0));
   }
+  if($.cookie("group") == "Salarie"){
+    content = $.cookie("nom_client_sal") + " " + $.cookie("prenom_client_sal");
+    $("#client").empty();
+    $("#client").append(
+      "<label for='exampleInputEmail1'>Client</label>\
+        <input readonly=''  class='form-select form-control ' value= '" +
+        content +
+        "'/>"
+    );
+  }
 }
 
-function getPasseur(cas = 0, add = 0) {
-  var id_client = $("#client_val").val();
-  if (
-    $.cookie("group") == "Client pro" ||
-    $.cookie("group") == "Client particulier"
-  ) {
-    id_client = $.cookie("id_logged_user_user");
+function getPasseur(cas = 0, add = 0,client=0) {
+  var id_client = ""
+  
+  if(client == 0){
+    id_client = $('#client_val').val();
+  }else{
+    id_client = client;
+  }
+  
+
+  if ($.cookie("group") == "Client pro" || $.cookie("group") == "Client particulier") {
+      id_client = $.cookie("id_logged_user_user");
   }
   if ($.cookie("group") == "Salarie") {
     content = $.cookie("name") + " " + $.cookie("first_name");
@@ -121,26 +126,24 @@ function getPasseur(cas = 0, add = 0) {
     );
     return;
   }
+  var url_ = salarie_add_not_pg+"&client="+id_client.toString()
   $.ajax({
     type: "GET",
-    url: salarie_add_not_pg,
-    data: { client: id_client },
+    url: url_,
     headers: {
       Authorization: "Bearer " + token,
     },
     success: function (response) {
       content = "<option value='0'>SELECTIONNER</option>";
-      response.forEach((elt) => {
-        content =
-          content +
-          "<option value = " +
-          elt["user"]["id"] +
-          ">" +
-          elt["user"]["nom"] +
-          "  " +
-          elt["user"]["prenom"] +
-          "</option>";
-      });
+      var r
+      if(typeof(response["results"])==="undefined"){
+        r = response
+      }else{
+        r = response['results']
+      }
+      r.forEach((elt) => {
+        content = content +"<option value = " +elt["user"]["id"] +">" +elt["user"]["nom"] +"  " +elt["user"]["prenom"] +"</option>";
+        });
 
       $("#passeur").empty();
       $("#passeur").append(
@@ -158,7 +161,9 @@ function getPasseur(cas = 0, add = 0) {
             "</select>"
         );
         $("#passeur_val").val(cas).change();
+        
       }
+      
     },
     error: function (response) {
       console.log(response);
@@ -175,29 +180,23 @@ function getPasseur(cas = 0, add = 0) {
         Authorization: "Bearer " + token,
       },
       success: function (response) {
-        $("#agent_val")
-          .val(response[0]["info_concession"]["agent_rattache"]["user"])
-          .change();
+        $("#agent_val").val(response[0]["info_concession"]["agent_rattache"]["user"]).change();
       },
       error: function (response) {
-        alert(
-          "Echec de récupération de l'agent référent selectionnez le manuellement"
-        );
+        alert("Echec de récupération de l'agent référent selectionnez le manuellement");
       },
     });
   }
 }
-function getAgent(cas = 1, val_ = 0) {
-  if (
-    $.cookie("group") == "Administrateur" ||
-    $.cookie("group") == "Audit planneur"
-  ) {
+function getAgent(cas = 1, val_ = 0,agent="") {
+  if ($.cookie("group") == "Administrateur" ||$.cookie("group") == "Audit planneur") {
     $.ajax({
       type: "GET",
       url: asurl_not_paginated,
       headers: {
         Authorization: "Bearer " + token,
       },
+      data:{'for_rdv':'ok'},
       success: function (response) {
         //console.log(response)
         content = "<option value='0'>SELECTIONNER</option>";
@@ -216,7 +215,7 @@ function getAgent(cas = 1, val_ = 0) {
           $("#agent").empty();
           $("#agent").append(
             " <label for='exampleInputEmail1'>Agent de secteur</label>\
-                        <select disabled=''  class='form-select form-control form-select-sm' id='as_val'> " +
+                        <select  class='form-select form-control form-select-sm' id='as_val'> " +
               content +
               "</select>"
           );
@@ -233,7 +232,7 @@ function getAgent(cas = 1, val_ = 0) {
           $("#agent").empty();
           $("#agent").append(
             " <label for='exampleInputEmail1'>Agent de secteur</label>\
-                        <select disabled=''  class='form-select form-control form-select-sm' id='agent_val'> " +
+                        <select  class='form-select form-control form-select-sm' id='agent_val'> " +
               content +
               "</select>"
           );
@@ -245,10 +244,7 @@ function getAgent(cas = 1, val_ = 0) {
       },
     });
   }
-  if (
-    $.cookie("group") == "Agent secteur" ||
-    $.cookie("group") == "Agent constat"
-  ) {
+  if ($.cookie("group") == "Agent secteur") {
     content = $.cookie("name") + " " + $.cookie("first_name");
     $("#agent").empty();
     $("#agent").append(
@@ -258,10 +254,8 @@ function getAgent(cas = 1, val_ = 0) {
         "/>"
     );
   }
-  if (
-    $.cookie("group") == "Client pro" ||
-    $.cookie("group") == "Client particulier"
-  ) {
+
+  if ($.cookie("group") == "Agent constat") {
     content = $.cookie("nom_agent");
     $("#agent").empty();
     $("#agent").append(
@@ -270,6 +264,36 @@ function getAgent(cas = 1, val_ = 0) {
         content +
         "/>"
     );
+  }
+  if ($.cookie("group") == "Client pro" || $.cookie("group") == "Client particulier") {
+    content = $.cookie("nom_agent");
+    $("#agent").empty();
+    $("#agent").append(
+      "<label for='exampleInputEmail1'>Agent de secteur</label>\
+            <input readonly=''  class='form-select form-control ' value= " +
+        content +
+        "/>"
+    );
+  }
+  if($.cookie("group") == "Salarie"){
+    if(agent==""){
+      agent = $.cookie("nom_agent")+" "+$.cookie("prenom_agent")
+      $("#agent").empty();
+      $("#agent").append(
+        "<label for='exampleInputEmail1'>Agent secteur</label>\
+          <input readonly=''  class='form-select form-control ' value= '" +
+          agent +
+          "'/>"
+      );
+    }else{
+      $("#agent").empty();
+      $("#agent").append(
+        "<label for='exampleInputEmail1'>Agent secteur</label>\
+          <input readonly=''  class='form-select form-control ' value= '" +
+          agent +
+          "'/>"
+      );
+    }
   }
 }
 function getInterventionandPropriete(cas = 1, val_ = 0, val1 = 0) {
@@ -295,7 +319,7 @@ function getInterventionandPropriete(cas = 1, val_ = 0, val1 = 0) {
       $("#intervention").empty();
       $("#intervention").append(
         " <label for='exampleInputEmail1'>Type Intervention</label>\
-                    <select  class='form-select form-control form-select-lg' id='intervention_val'> " +
+                    <select onchange='onTypeIntervention()'  class='form-select form-control form-select-lg' id='intervention_val'> " +
           content +
           "</select>"
       );
@@ -367,41 +391,28 @@ function addRdv() {
   data["ref_edl"] = $("#ref_edl").val();
   data["ancien_locataire"] = $("#adresse_ancien_locataire").val();
   data["intervention"] = $("#intervention_val").val();
-  if (
-    $.cookie("group") == "Agent secteur" ||
-    $.cookie("group") == "Agent constat" ||
-    $.cookie("group") == "Audit planneur" ||
-    $.cookie("group") == "Administrateur"
-  ) {
+  if ($.cookie("group") == "Agent secteur" ||$.cookie("group") == "Agent constat" ||$.cookie("group") == "Audit planneur" ||$.cookie("group") == "Administrateur") {
     data["client"] = $("#client_val").val();
   }
   data["statut"] = 1;
   data["date"] = $("#date").val();
-  if (
-    $.cookie("group") == "Client pro" ||
-    $.cookie("group") == "Client particulier" ||
-    $.cookie("group") == "Agent secteur" ||
-    $.cookie("group") == "Agent constat" ||
-    $.cookie("group") == "Audit planneur" ||
-    $.cookie("group") == "Administrateur"
-  ) {
+  if ($.cookie("group") == "Client pro" || $.cookie("group") == "Client particulier" || $.cookie("group") == "Agent secteur" || $.cookie("group") == "Agent constat" || $.cookie("group") == "Audit planneur" || $.cookie("group") == "Administrateur") {
     if (!$("#passeur_val").val() || $("#passeur_val").val() == "0") {
     } else {
       data["passeur"] = $("#passeur_val").val();
     }
   }
-  if (
-    $.cookie("group") == "Agent secteur" ||
-    $.cookie("group") == "Agent constat"
-  ) {
+  if ($.cookie("group") == "Agent secteur") {
     data["agent"] = $.cookie("id_logged_user_user");
   }
-  if (
-    $.cookie("group") == "Administrateur" ||
-    $.cookie("group") == "Audit planneur"
-  ) {
+  if ($.cookie("group") == "Administrateur") {
     data["agent"] = $("#agent_val").val();
   }
+  if ($.cookie("group") == "Audit planneur") {
+    data["agent"] = $("#agent_val").val();
+    data['audit_planneur'] = $.cookie("id_logged_user_user");
+  }
+
   if (
     $.cookie("group") == "Client pro" ||
     $.cookie("group") == "Client particulier" ||
@@ -415,12 +426,14 @@ function addRdv() {
   data["list_documents"] = $("#list_documents").val();
   data["info_diverses"] = $("#info_diverses").val();
 
-  if (
-    $.cookie("group") == "Client pro" ||
-    $.cookie("group") == "Client particulier"
-  ) {
+  if ($.cookie("group") == "Client pro" || $.cookie("group") == "Client particulier") {
     data["client"] = $.cookie("id_logged_user_user");
   }
+  if ($.cookie("group") == "Agent constat"){
+      data['agent_constat'] = $.cookie('id_logged_user_user')
+      data["agent"] = $.cookie("id_user_agent")
+  }
+
   if ($.cookie("group") == "Salarie") {
     if ($.cookie("id_client_sal") == 0) {
       alert(
@@ -433,7 +446,12 @@ function addRdv() {
     data["client"] = $.cookie("id_user_client");
     data["agent"] = $.cookie("id_user_agent");
   }
-
+  var dte = $("#date_sortie").val()
+  if(!Date.parse(dte)){
+    
+  }else{
+    data['dte_sortie_ancien_loc'] = $("#date_sortie").val()
+  }
   $.ajax({
     type: "POST",
     url: rdv_add,
@@ -442,11 +460,14 @@ function addRdv() {
       Authorization: "Bearer " + token,
     },
     success: function (response) {
+      $("#editForm").modal('hide')
       alert("RDV Ajouté avec succes");
       window.location.replace("rendez-vous_list.html");
     },
     error: function (response) {
-      console.log(response);
+      $("#editForm").modal('hide')
+      alert('Echec de la modification veuillez reéssayer plus tard')
+
     },
   });
 }
@@ -480,7 +501,7 @@ function getRdvToEdit() {
       $("#numero_parking_propriete").val(
         parseInt(response[0]["propriete"]["numeroParking"]
       ));
-      $("#adresse_propriete").val(parseInt(response[0]["propriete"]["adresse"]));
+      $("#adresse_propriete").val(response[0]["propriete"]["adresse"]);
       $("#code_postal_propriete").val(parseInt(response[0]["propriete"]["codePostal"]));
       $("#ville_propriete").val(response[0]["propriete"]["ville"]);
       $("#adresse_complementaire_propriete").val(
@@ -488,36 +509,46 @@ function getRdvToEdit() {
       );
       $("#numero_cave_propriete").val(response[0]["propriete"]["numeroCave"]);
       $("#numero_sol_propriete").val(response[0]["propriete"]["numeroSol"]);
-      $("#ref_lot").val(parseInt(response[0]["ref_lot"]));
+      $("#ref_lot").val(response[0]["ref_lot"]);
+      if(response[0]['dte_sortie_ancien_loc']!=null || response[0]["intervention"]["id"].toString()=="2"){
+        if(response[0]['dte_sortie_ancien_loc']!=null){
+          var formattedDate1 = new Date(response[0]["dte_sortie_ancien_loc"]).toISOString().split("T")[0];
+          $("#date_sortie").val(formattedDate1)
+        }
+        $('#date_sortie_row').css('display','inline')
+      }else{
+        $('#date_sortie_row').css('display','none')
+      }	    
       var formattedDate = new Date(response[0]["date"])
         .toISOString()
         .split("T")[0];
       $("#date").val(formattedDate);
-      $("#ref_edl").val(response[0]["ref_rdv_edl"]);
+      $("#ref_edl").val(response[0]["id"]);
       $("#adresse_ancien_locataire").val(
         response[0]["propriete"]["ancien_locataire"]
       );
       getInterventionandPropriete(
         1,
         (val_ = response[0]["intervention"]["id"]),
-        response[0]["propriete"]["type_propriete"]["id"]
+       val1= response[0]["propriete"]["type_propriete"]["id"]
       );
       $("#type").val(response[0]["propriete"]["type"]);
       $("#consignes_part").val(response[0]["consignes_particuliere"]);
       $("#list_documents").val(response[0]["liste_document_recuperer"]);
       $("#info_diverses").val(response[0]["info_diverses"]);
       if (response[0]["client"] != null) {
-        getClient(response[0]["client"]["user"]["id"], (val_ = 1));
+        getClient(response[0]["client"]["user"]["id"], val_ = 1);
       }
       if (response[0]["passeur"] != null) {
-        getPasseur((cas = response[0]["passeur"][0]["user"]["id"]), (add = 1));
+        getPasseur(cas = response[0]["passeur"][0]["user"]["id"],add=1,client=response[0]["client"]["user"]["id"]);
       } else {
-        getPasseur((cas = 0), (add = 1));
+        getPasseur(cas = 0,add=1,client=response[0]["client"]["user"]["id"]);
       }
       if (response[0]["agent"] != null) {
-        getAgent((cas = 1), (val_ = response[0]["agent"]["user"]["id"]));
+        var agent = response[0]["agent"]["user"]["nom"]+" "+response[0]["agent"]["user"]["prenom"]
+        getAgent(cas = 1, val_ = response[0]["agent"]["user"]["id"],agent=agent);
       } else {
-        getAgent((cas = 1), (val_ = 0));
+        getAgent((cas = 1), (val_ = 0),agent=" ");
       }
       if (response[0]["audit_planneur"] != null) {
         $("#planneur").val(
@@ -629,6 +660,7 @@ function clearForm() {
   $("#list_documents").val("");
 }
 $("#goSave").on("click", function () {
+  $("#editForm").modal('show')
   addRdv();
 });
 
@@ -685,7 +717,7 @@ function editRdv() {
     $.cookie("group") == "Agent constat" ||
     $.cookie("group") == "Audit planneur"
   ) {
-    data["agent"] = $.cookie("id_user_logged");
+    data["agent"] = $.cookie("id_logged_user_user");
   }
   if ($.cookie("group") == "Administrateur") {
     data["agent"] = $("#agent_val").val();
@@ -695,7 +727,7 @@ function editRdv() {
     $.cookie("group") == "Client particulier" ||
     $.cookie("group") == "Salarie"
   ) {
-    data["agent"] = $.cookie("id_logged_user_user");
+    data["agent"] = $.cookie("id_user_agent");
   }
   data["type_propriete"] = $("#propriete_val").val();
   data["type"] = $("#type").val();
@@ -707,10 +739,17 @@ function editRdv() {
     $.cookie("group") == "Client pro" ||
     $.cookie("group") == "Client particulier"
   ) {
-    data["client"] = $.cookie("id_user_logged");
+    data["client"] = $.cookie("id_logged_user_user");
   }
   if ($.cookie("group") == "Salarie") {
     data["passeur"] = $.cookie("id_logged_user_user");
+  }
+
+  var dte = $("#date_sortie").val()
+  if(!Date.parse(dte)){
+    
+  }else{
+    data['dte_sortie_ancien_loc'] = $("#date_sortie").val()
   }
 
   $.ajax({
@@ -721,15 +760,26 @@ function editRdv() {
       Authorization: "Bearer " + token,
     },
     success: function (response) {
+      $("#editForm").modal('hide')
       alert("RDV Modifié avec succes");
       window.location.replace("rendez-vous_list.html");
     },
     error: function (response) {
+      $("#editForm").modal('hide')
       alert("Echec Modification");
-      console.log(response);
     },
   });
 }
 $("#goEdit").on("click", function () {
+  $("#editForm").modal('show')
   editRdv();
 });
+
+function onTypeIntervention(){
+  val = $('#intervention_val').val()
+  if(val=="2"){
+    $('#date_sortie_row').css('display','inline')
+  }else{
+    $('#date_sortie_row').css('display','none')
+  }
+}

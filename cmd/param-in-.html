@@ -102,7 +102,7 @@
                                       >
                                     </li>
                                     <li class="sub-menu nav-item" style="display: inline;" id="rdv_link">
-                                      <a class="nav-link" href="/utilisateurs"
+                                      <a class="nav-link" href="#"
                                         ><i class="bi bi-calendar-event"></i>
                                         <p>Commande</p>
                                         <i class="fas fa-angle-left right"></i
@@ -122,13 +122,13 @@
                                       </ul>
                                     </li>
                                     <li class="sub-menu nav-item menu-is-opening menu-open" style="display: inline;" id="user_link">
-                                      <a class="nav-link active" href="/utilisateurs"
+                                      <a class="nav-link active" href="#"
                                         ><i class="bi bi-people"></i>
                                         <p>Utilisateurs</p>
                                         <i class="fas fa-angle-left right"></i
                                       ></a>
                                 <ul class="nav nav-treeview" style="display: block">
-                                    <li class="nav-item">
+                                    <li class="nav-item" id="add_user_link">
                                         <a class="nav-link" href="ajouter-un-utilisateur.html"><i class="bi bi-person-plus"></i>
                                             <p>Ajouter un utilisateur</p></a
                                           >
@@ -144,7 +144,7 @@
                                               
                                     <li class="sub-menu nav-item menu-is-opening 
                                                     menu-open" style="display: inline;" id="plannification_link">
-                                                <a class="nav-link active" href="/#"><i class="bi bi-gear"></i>
+                                                <a class="nav-link active" href="#"><i class="bi bi-gear"></i>
                                                     <p>Planification</p>
                                                     <i class="fas fa-angle-left right"></i>
                                                 </a>
@@ -163,7 +163,7 @@
                                     </li>
 
                                     <li class="sub-menu nav-item" id="param_link " style="display: inline;">
-                                        <a class="nav-link" href="/utilisateurs"><i class="bi bi-gear"></i>
+                                        <a class="nav-link" href="#"><i class="bi bi-gear"></i>
                                         <p>Paramètres</p>
                                         <i class="fas fa-angle-left right"></i
                                       ></a>
@@ -299,7 +299,7 @@
     </div>
     </div>
     </div>
-    </div>
+                      </div>
 
     <div class="tab-content" id="myTabContent">
         <div class="tab-pane fade show " id="add" role="tabpanel" aria-labelledby="home-tab">
@@ -393,14 +393,12 @@
     <script src="assets/dist/js/url.js" ></script>
     <script src="assets/dist/js/user.js" ></script>
     <script src="assets/dist/js/event_user.js" ></script>
-    <script src="assets/dist/js/parametre.js" ></script>
+    <script src="assets/dist/js/parametre.js" ></script> 
     <script>
         checkLoged()
         loadNav()
-        
         window.onload = function(){
           getInterventionAndStatut()
-          loadNav()
       }
     </script>
   </body>

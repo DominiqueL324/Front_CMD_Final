@@ -4,6 +4,7 @@ var max = 0;
 var next = ""
 var prev = ""
 function getAllRdv() {
+  $("#waiters").css("display","inline")
   $.ajax({
     type: "GET",
     url: rdv_add,
@@ -18,12 +19,19 @@ function getAllRdv() {
       $("#total").text(max_);
       $("#contentTableRdv").empty();
       response["results"].forEach((elt) => {
-        var formattedDate = new Date(elt["date"]);
-        var d = formattedDate.getDate();
+        var formattedDate = new Date(elt["date"])
+	var d = formattedDate.getDate();
         var m = formattedDate.getMonth();
+	var hr = formattedDate.getHours()-1
+        var min_ =formattedDate.getMinutes()      
         m += 1; // JavaScript months are 0-11
         var y = formattedDate.getFullYear();
         var couleur;
+	var intervention = "Non Assignée"
+
+        if(elt["intervention"] != null){
+          intervention = elt["intervention"]["type"]
+        }      
         if (parseInt(elt["statut"]) == 1) {
           couleur = "rgb(241, 67, 67)";
         }
@@ -36,51 +44,25 @@ function getAllRdv() {
         if (parseInt(elt["statut"]) == 4) {
           couleur = "rgb(93, 255, 101)";
         }
-
         $("#contentTableRdv").append(
-          '<tr style="background-color:' +
-            couleur +
-            '; color:white;">\
-                        <td>' +
-            i +
-            "</td>\
-                        <td>" +
-            String(d).padStart(2, "0") +
-            "/" +
-            String(m).padStart(2, "0") +
-            "/" +
-            y +
-            "</td>\
-                        <td>" +
-            elt["client"]["societe"] +
-            "</td>\
-                        <td>" +
-            elt["ref_lot"] +
-            "</td>\
-                        <td>" +
-            elt["ref_rdv_edl"] +
-            '</td>\
-                        <td>\
-                            <span class="badge badge-success">' +
-            elt["intervention"]["type"] +
-            '</span>\
-                        </td>\
-                        <td>\
-                            <span class="badge badge-primary">' +
-            elt["propriete"]["type_propriete"]["type"] +
-            "</span>\
-                        </td>\
-                        <td>\
-                            <a  onclick='goWhereEdit(" +
-            elt["id"] +
-            ')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a onclick=\'goWhereEdit1(' +
-            elt["id"] +
-            ')\'><i class="fa fa-calendar" aria-hidden="true" style="color: rgb(136, 102, 119)"></i></a>\
-                        </td>\
-                    </tr>'
+          '<tr style="background-color:' +couleur +'; color:white;">\
+            <td>' +i + "</td>\
+            <td>" +String(d).padStart(2, "0") +"/" +String(m).padStart(2, "0") +"/" +y +" "+String(hr).padStart(2, "0")+"h:"+String(min_).padStart(2, "0")+"</td>\
+            <td>" +elt["client"]["societe"] +"</td>\
+            <td>" +elt["ref_lot"] +"</td>\
+            <td>" +elt["agent"]["trigramme"] +"</td>\
+            <td>" +elt["id"] +'</td>\
+            <td>' +elt["propriete"]["bailleur"]["nom"] +" "+elt["propriete"]["bailleur"]["prenom"]+'</td>\
+            <td>' +elt["propriete"]["locataire"]["nom"] +" "+ elt["propriete"]["locataire"]["prenom"]+'</td>\
+            <td> <span class="badge badge-success">' +intervention +'</span></td>\
+            <td><span class="badge badge-primary">' +elt["propriete"]["type_propriete"]["type"] +"</span></td>\
+		<td>" +elt["propriete"]["ville"]+"</td>\
+            <td><a  onclick='goWhereEdit(" +elt["id"] +')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a onclick=\'goWhereEdit1(' +elt["id"] +')\'><i class="fa fa-calendar" aria-hidden="true" style="color: rgb(136, 102, 119)"></i></a></td>\
+            </tr>'
         );
         i++;
       });
+      $("#waiters").css("display","none")
     },
     error: function (response) {
       console.log(response);
@@ -179,6 +161,8 @@ function code(url_) {
         var formattedDate = new Date(elt["date"]);
         var d = formattedDate.getDate();
         var m = formattedDate.getMonth();
+	var hr = formattedDate.getHours()-1
+        var min_ =formattedDate.getMinutes()      
         m += 1; // JavaScript months are 0-11
         var y = formattedDate.getFullYear();
 
@@ -195,47 +179,25 @@ function code(url_) {
         if (parseInt(elt["statut"]) == 4) {
           couleur = "rgb(93, 255, 101)";
         }
+	var intervention="Non Assignée"      
+	if(elt["intervention"] != null){
+          intervention = elt["intervention"]["type"]
+        }      
         $("#contentTableRdv").append(
-          '<tr style="background-color:' +
-            couleur +
-            '; color:white;">\
-                        <td>' +
-            i +
-            "</td>\
-                        <td>" +
-            String(d).padStart(2, "0") +
-            "/" +
-            String(m).padStart(2, "0") +
-            "/" +
-            y +
-            "</td>\
-                        <td>" +
-            elt["client"]["societe"] +
-            "</td>\
-                        <td>" +
-            elt["ref_lot"] +
-            "</td>\
-                        <td>" +
-            elt["ref_rdv_edl"] +
-            '</td>\
-                        <td>\
-                            <span class="badge badge-success">' +
-            elt["intervention"]["type"] +
-            '</span>\
-                        </td>\
-                        <td>\
-                            <span class="badge badge-primary">' +
-            elt["propriete"]["type_propriete"]["type"] +
-            "</span>\
-                        </td>\
-                        <td>\
-                            <a onclick='goWhereEdit(" +
-            elt["id"] +
-            ')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a onclick=\'goWhereEdit1(' +
-            elt["id"] +
-            ')\'><i class="bi bi-eye" style="color: rgb(136, 102, 119)"></i></a>\
-                        </td>\
-                    </tr>'
+          '<tr style="background-color:' +couleur +'; color:white;">\
+            <td>' +i + "</td>\
+            <td>" +String(d).padStart(2, "0") +"/" +String(m).padStart(2, "0") +"/" +y +" "+String(hr).padStart(2, "0")+"h:"+String(min_).padStart(2, "0")+"</td>\
+            <td>" +elt["client"]["societe"] +"</td>\
+            <td>" +elt["ref_lot"] +"</td>\
+            <td>" +elt["agent"]["trigramme"] +"</td>\
+            <td>" +elt["id"] +'</td>\
+            <td>' +elt["propriete"]["bailleur"]["nom"] +" "+elt["propriete"]["bailleur"]["prenom"]+'</td>\
+            <td>' +elt["propriete"]["locataire"]["nom"] +" "+ elt["propriete"]["locataire"]["prenom"]+'</td>\
+            <td> <span class="badge badge-success">' +intervention +'</span></td>\
+            <td><span class="badge badge-primary">' +elt["propriete"]["type_propriete"]["type"] +"</span></td>\
+		<td>" +elt["propriete"]["ville"]+"</td>\
+            <td><a  onclick='goWhereEdit(" +elt["id"] +')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a onclick=\'goWhereEdit1(' +elt["id"] +')\'><i class="fa fa-calendar" aria-hidden="true" style="color: rgb(136, 102, 119)"></i></a></td>\
+            </tr>'
         );
         i++;
       });

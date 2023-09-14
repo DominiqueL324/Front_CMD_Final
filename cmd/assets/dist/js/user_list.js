@@ -8,6 +8,7 @@ var next = "";
 var prev = "";
 
 function getAllUsers() {
+  $("#waiters").css("display","inline")
   var content = "";
   var url_go = base_local + "/admin_app/users/";
   $.ajax({
@@ -86,12 +87,12 @@ function getAllUsers() {
             "</span>\
                         </td>\
                         <td>\
-                            <a href='javascript:void(0);'  onclick='goWhereEdit(" +
+                            <a onclick='goWhereEdit(" +
             id_toget +
             ',"' +
             elt["groups"][0]["group"] +
             '"' +
-            ')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a href="javascript:void(0);"  onclick=\'goWhereEdit1(' +
+            ')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;;<a  onclick=\'goWhereEdit1(' +
             id_toget +
             ',"' +
             elt["groups"][0]["group"] +
@@ -102,6 +103,7 @@ function getAllUsers() {
         );
         i++;
       });
+      $("#waiters").css("display","none")
     },
     error: function (response) {
       console.log(response);
@@ -252,12 +254,12 @@ function code(url_) {
             "</span>\
               </td>\
               <td>\
-              <a href='javascript:void(0);'  onclick='goWhereEdit(" +
+              <a  onclick='goWhereEdit(" +
             id_toget +
             ',"' +
             elt["groups"][0]["group"] +
             '"' +
-            ')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a href="javascript:void(0);"  onclick=\'goWhereEdit1(' +
+            ')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a  onclick=\'goWhereEdit1(' +
             id_toget +
             ',"' +
             elt["groups"][0]["group"] +
@@ -274,20 +276,9 @@ function code(url_) {
     },
   });
 }
-$("#filtre").on("keyup", function () {
+$("#findMan").on("click", function () {
   var val = $("#filtre").val();
   var url_ = base_local + "/admin_app/users/?value=" + val;
-  if($.cookie('group')=="Agent secteur" || $.cookie('group')=="Agent constat" || $.cookie('group')=="Audit planneur"){
-      url_ = url_+"&secteur="+ $.cookie('id_user_logged');
-  }
-  if($.cookie('group')=="Client pro" ){
-    url_ = url_+"&client="+ $.cookie('id_user_logged');
-  }
-
-  if($.cookie('group')=="Client particulier" || $.cookie('group')=="Salarie"){
-    return
-  }
-
   code(url_);
 });
 
