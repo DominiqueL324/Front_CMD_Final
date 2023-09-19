@@ -446,6 +446,27 @@
                           <div class="col"><h5>SPECIFICITES DU BIEN</h5></div>
                         </div>
                         <div class="row">
+                          <form>
+                            <div class="row">
+                              <div class=" col-sm-6 col-md-6">
+                                <input type="radio" id="newlogment" name="contact" value="1" />
+                                <label for="newlogment">Nouveau logement</label>
+                              </div>
+                              <div class=" col-sm-6 col-md-6">
+                                <input type="radio" id="oldlogement" name="contact" value="2" />
+                                <label for="oldlogement">Logement existant</label>
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                        <div class="row">
+                          <div class="col">
+                            <div class="form-group" id="ligne_maison">
+                            </div>
+                          </div>
+                        </div>
+                        <br>
+                        <div class="row">
                           <div class="col">
                             <div class="form-group">
                               <label for="surface du bien"
@@ -460,58 +481,8 @@
                             </div>
                           </div>
                           <div class="col">
-                            <div class="form-group">
-                              <label for="Type">Type</label
-                              ><select
-                                class="form-control undefined"
-                                name="type"
-                                id="type"
-                                required
-                              >
-                                <option value="studio">STUDIO</option>
-                                <option value="studio meublé">
-                                  STUDIO MEUBLE
-                                </option>
-                                <option value="F1">F1</option>
-                                <option value="F1 Bis">F1 Bis</option>
-                                <option value="F1 Bis Meublé">
-                                  F1 Bis Meublé
-                                </option>
-                                <option value="F2">F2</option>
-                                <option value="F2 meuble">F2 Meublé</option>
-                                <option value="F3">F3</option>
-                                <option value="F3 meuble">F3 Meublé</option>
-                                <option value="F4">F4</option>
-                                <option value="F4 meuble">F4 Meublé</option>
-                                <option value="F5">F5</option>
-                                <option value="F5 meuble">F5 Meublé</option>
-                                <option value="F6">F6</option>
-                                <option value="F6 meuble">F6 Meublé</option>
-                                <option value="F7">F7</option>
-                                <option value="F7 meuble">F7 Meublé</option>
-                                <option value="F8">F8</option>
-                                <option value="F8 meuble">F8 Meublé</option>
-                                <option value="T1">T1</option>
-                                <option value="T1 meuble">T1 Meublé</option>
-                                <option value="T2">T2</option>
-                                <option value="T2 meuble">T2 Meublé</option>
-                                <option value="T3">T3</option>
-                                <option value="T3 meuble">T3 Meublé</option>
-                                <option value="T4">T4</option>
-                                <option value="T4 meuble">T4 Meublé</option>
-                                <option value="T5">T5</option>
-                                <option value="T5 meuble">T5 Meublé</option>
-                                <option value="T6">T6</option>
-                                <option value="T6 meuble">T6 Meublé</option>
-                                <option value="T7">T7</option>
-                                <option value="T7 meuble">T7 Meublé</option>
-                                <option value="T8">T8</option>
-                                <option value="T8 meuble">T8 Meublé</option>
-                                <option value="T9">T9</option>
-                                <option value="T9 meuble">T9 Meublé</option>
-                                <option value="T10">T10</option>
-                                <option value="T10 meuble">T10 Meublé</option>
-                              </select>
+                            <div class="form-group" id="ligne_type">
+                              
                             </div>
                           </div>
                           <div class="col">
@@ -780,6 +751,7 @@
         getClient()
         getAgent()
         getInterventionandPropriete()
+        getTypeLogement()
         window.onload = function(){
             //loadNav()
         }

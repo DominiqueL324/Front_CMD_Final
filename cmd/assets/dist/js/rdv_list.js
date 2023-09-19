@@ -3,7 +3,31 @@ var k = 0;
 var max = 0;
 var next = ""
 var prev = ""
+let listeLogementType=[];
+let logementEnCours = {};
+
+function getTypeLogement(){
+  $.ajax({
+    type: "GET",
+    url: 'http://195.15.218.172/edlgateway/api/v1/logement/type_log/all?start=12&limit=12&count=12&category=tre',
+    headers: {
+      Authorization: "Bearer " + token,
+    },
+    success: function (response) {
+      content = "<option value='0'>SELECTIONNER</option>";
+      if(typeof(response["results"])==="undefined"){
+        listeLogementType = null
+      }else{
+        listeLogementType = response['results']
+      }
+    },
+    error: function (response) {
+      console.log(response);
+    },
+  });
+}
 function getAllRdv() {
+  getTypeLogement();
   $("#waiters").css("display","inline")
   $.ajax({
     type: "GET",
@@ -19,6 +43,16 @@ function getAllRdv() {
       $("#total").text(max_);
       $("#contentTableRdv").empty();
       response["results"].forEach((elt) => {
+        var type = "";
+        if(listeLogementType != null){
+          logementEnCours = listeLogementType.find(elem => elem.id.toString() === elt["propriete"]["type"].toString())
+        }
+        if((typeof logementEnCours ).toString()== "undefined"){
+          type = elt["propriete"]["type_propriete"]["type"] ;
+        }else{
+          console.log(typeof logementEnCours)  
+          type = logementEnCours["nom"]
+        }
         var formattedDate = new Date(elt["date"])
 	var d = formattedDate.getDate();
         var m = formattedDate.getMonth();
@@ -55,7 +89,7 @@ function getAllRdv() {
             <td>' +elt["propriete"]["bailleur"]["nom"] +" "+elt["propriete"]["bailleur"]["prenom"]+'</td>\
             <td>' +elt["propriete"]["locataire"]["nom"] +" "+ elt["propriete"]["locataire"]["prenom"]+'</td>\
             <td> <span class="badge badge-success">' +intervention +'</span></td>\
-            <td><span class="badge badge-primary">' +elt["propriete"]["type_propriete"]["type"] +"</span></td>\
+            <td><span class="badge badge-primary">' + type +"</span></td>\
 		<td>" +elt["propriete"]["ville"]+"</td>\
             <td><a  onclick='goWhereEdit(" +elt["id"] +')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a onclick=\'goWhereEdit1(' +elt["id"] +')\'><i class="fa fa-calendar" aria-hidden="true" style="color: rgb(136, 102, 119)"></i></a></td>\
             </tr>'
@@ -158,6 +192,16 @@ function code(url_) {
       $("#total").text(max_);
       $("#contentTableRdv").empty();
       response["results"].forEach((elt) => {
+        var type = "";
+        if(listeLogementType != null){
+          logementEnCours = listeLogementType.find(elem => elem.id.toString() === elt["propriete"]["type"].toString())
+        }
+        if((typeof logementEnCours ).toString()== "undefined"){
+          type = elt["propriete"]["type_propriete"]["type"] ;
+        }else{
+          console.log(typeof logementEnCours)  
+          type = logementEnCours["nom"]
+        }
         var formattedDate = new Date(elt["date"]);
         var d = formattedDate.getDate();
         var m = formattedDate.getMonth();
@@ -194,7 +238,7 @@ function code(url_) {
             <td>' +elt["propriete"]["bailleur"]["nom"] +" "+elt["propriete"]["bailleur"]["prenom"]+'</td>\
             <td>' +elt["propriete"]["locataire"]["nom"] +" "+ elt["propriete"]["locataire"]["prenom"]+'</td>\
             <td> <span class="badge badge-success">' +intervention +'</span></td>\
-            <td><span class="badge badge-primary">' +elt["propriete"]["type_propriete"]["type"] +"</span></td>\
+            <td><span class="badge badge-primary">' +type +"</span></td>\
 		<td>" +elt["propriete"]["ville"]+"</td>\
             <td><a  onclick='goWhereEdit(" +elt["id"] +')\' ><i class="bi bi-pencil-square"style="color: rgb(0, 0, 0)"></i></a>&nbsp;<a onclick=\'goWhereEdit1(' +elt["id"] +')\'><i class="fa fa-calendar" aria-hidden="true" style="color: rgb(136, 102, 119)"></i></a></td>\
             </tr>'

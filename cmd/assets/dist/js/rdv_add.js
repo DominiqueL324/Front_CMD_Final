@@ -1,3 +1,8 @@
+let listeClient =[];
+let listeLogementClient = [];
+let typeLogement = [];
+let clientForWork = {};
+let casLogement = 0;
 $("#telephone_locataire").keyup(function () {
   var min = $("#telephone_locataire").val();
   min = min.toString();
@@ -33,6 +38,7 @@ function getClient(cas = 0, val_ = 1) {
           r = response;
         } else {
           r = response["results"];
+          listeClient = response["results"];
         }
         r.forEach((elt) => {
           content =
@@ -126,6 +132,47 @@ function getPasseur(cas = 0, add = 0,client=0) {
     );
     return;
   }
+  
+  clientForWork = listeClient.find(elem => elem.user.id.toString() === $('#client_val').val().toString());
+  var url_ = "http://195.15.218.172/edlgateway/api/v1/logement/single/logement/compte_client/?ID="+clientForWork['id'];
+  $.ajax({
+    type: "GET",
+    url: url_,
+    headers: {
+      Authorization: "Bearer " + token,
+    },
+    success: function (response) {
+      content = "<option value='0'>SELECTIONNER</option>";
+      var r
+      if(typeof(response["results"])==="undefined"){
+        r = null
+      }else{
+        r = response['results']
+        listeLogementClient = response['results']
+      }
+      if(r != null){
+        r.forEach((elt) => {
+          content = content +"<option value = " +elt["_id"] +">" +elt["type_log"]["nom"] +"  Batiment "+elt["batiment"]+" Référence "+elt["ref_lot_client"] +"</option>";
+          });
+  
+        $("#ligne_maison").empty();
+        $("#ligne_maison").append(
+          "<select onchange='displayLogement()' class='form-select form-control form-select-sm' id='logement'> " +
+            content +
+            "</select>"
+        );
+      }else{
+        $("#ligne_maison").empty();
+        $("#ligne_maison").append(
+          "<select  onchange='displayLogement()' class='form-select  form-control form-select-sm' id='logement'> " +
+            content + "</select>");
+      }
+      
+    },
+    error: function (response) {
+      console.log(response);
+    },
+  });
   var url_ = salarie_add_not_pg+"&client="+id_client.toString()
   $.ajax({
     type: "GET",
@@ -144,7 +191,6 @@ function getPasseur(cas = 0, add = 0,client=0) {
       r.forEach((elt) => {
         content = content +"<option value = " +elt["user"]["id"] +">" +elt["user"]["nom"] +"  " +elt["user"]["prenom"] +"</option>";
         });
-
       $("#passeur").empty();
       $("#passeur").append(
         " <label for='exampleInputEmail1'>Passeur</label>\
@@ -163,12 +209,12 @@ function getPasseur(cas = 0, add = 0,client=0) {
         $("#passeur_val").val(cas).change();
         
       }
-      
     },
     error: function (response) {
       console.log(response);
     },
   });
+
   if (add != 0) {
     url3 = client_add;
     url3 = url3 + id_client.toString();
@@ -187,6 +233,21 @@ function getPasseur(cas = 0, add = 0,client=0) {
       },
     });
   }
+}
+
+function displayLogement(){
+  let logement_ = listeLogementClient.find(elem => elem._id.toString() === $('#logement').val().toString());
+  $('#surface_propriete').val(logement_["surface"])
+  $("#type").val(logement_['type_log']['_id'])
+  $("#numero_sol_propriete").val(logement_['etage'])
+  $("#numero_propriete").val(logement_["numero_de_la_voie"])
+  $('#numero_parking_propriete').val(logement_['parking'])
+  $("#numero_cave_propriete").val(logement_['cave'])
+  $("#adresse_propriete").val(logement_['adresse'])
+  $("#adresse_complementaire_propriete").val(logement_['information_complementaire'])
+  $("#code_postal_propriete").val(logement_['postal_code'])
+  $('#ville_propriete').val(logement_['ville'])
+  $("#ref_lot").val(logement_['ref_lot_client'])
 }
 function getAgent(cas = 1, val_ = 0,agent="") {
   if ($.cookie("group") == "Administrateur" ||$.cookie("group") == "Audit planneur") {
@@ -367,6 +428,7 @@ function getInterventionandPropriete(cas = 1, val_ = 0, val1 = 0) {
   });
 }
 function addRdv() {
+  $("#goSave").html("Enregistrement en cours...");
   data = {};
   data["nom_bailleur"] = $("#nom_bailleur").val();
   data["prenom_bailleur"] = $("#prenom_bailleur").val();
@@ -383,7 +445,7 @@ function addRdv() {
   data["code_postal_propriete"] = $("#code_postal_propriete").val();
   data["ville_propriete"] = $("#ville_propriete").val();
   data["adresse_complementaire_propriete"] = $(
-    "#adresse_complementaire_propriete"
+    "#adresse_complementaire_propriete" 
   ).val();
   data["numero_cave_propriete"] = $("#numero_cave_propriete").val();
   data["numero_sol_propriete"] = $("#numero_sol_propriete").val();
@@ -421,7 +483,7 @@ function addRdv() {
     data["agent"] = $.cookie("id_user_agent");
   }
   data["type_propriete"] = $("#propriete_val").val();
-  data["type"] = $("#type").val();
+  data["type"] = $("#type  option:selected").text();
   data["consignes_part"] = $("#consignes_part").val();
   data["list_documents"] = $("#list_documents").val();
   data["info_diverses"] = $("#info_diverses").val();
@@ -460,11 +522,13 @@ function addRdv() {
       Authorization: "Bearer " + token,
     },
     success: function (response) {
+      $("#goSave").html("Enregistrer");
       $("#editForm").modal('hide')
       alert("RDV Ajouté avec succes");
       window.location.replace("rendez-vous_list.html");
     },
     error: function (response) {
+      $("#goSave").html("Enregistrer");
       $("#editForm").modal('hide')
       alert('Echec de la modification veuillez reéssayer plus tard')
 
@@ -659,9 +723,38 @@ function clearForm() {
   $("#list_documents").val("");
   $("#list_documents").val("");
 }
+
+$('#newlogment').click(function(){
+  casLogement = 1;
+  $('#logement').css("display", "none")
+  $('#logement').val("0")
+  $('#surface_propriete').val("")
+  $("#type").val("0")
+  $("#numero_sol_propriete").val("")
+  $("#numero_propriete").val("")
+  $('#numero_parking_propriete').val("")
+  $("#numero_cave_propriete").val("")
+  $("#adresse_propriete").val("")
+  $("#adresse_complementaire_propriete").val("")
+  $("#code_postal_propriete").val("")
+  $('#ville_propriete').val("")
+  $("#ref_lot").val("")
+});
+$('#oldlogement').click(function(){
+  casLogement = 0;
+  $('#logement').css("display", "inline")
+});
+
 $("#goSave").on("click", function () {
   $("#editForm").modal('show')
-  addRdv();
+  resultat = addLogement(clientForWork);
+  /*if(resultat==1){
+    addRdv();
+  }else{
+    $("#editForm").modal('hide')
+    alert("Echec de l'ajout du RDV doublond de réference de logement");
+  }*/
+ 
 });
 
 function editRdv() {
@@ -772,6 +865,7 @@ function editRdv() {
 }
 $("#goEdit").on("click", function () {
   $("#editForm").modal('show')
+  addLogement(clientForWork);
   editRdv();
 });
 
@@ -783,3 +877,120 @@ function onTypeIntervention(){
     $('#date_sortie_row').css('display','none')
   }
 }
+
+function sotert(object1,object2) {
+     if (object1.nom < object2.nom)
+        return -1;
+     if (object1.nom  >  object2.nom)
+        return 1;
+        return 0;
+}
+
+function getTypeLogement(){
+  $.ajax({
+    type: "GET",
+    url: 'http://195.15.218.172/edlgateway/api/v1/logement/type_log/all?start=12&limit=12&count=12&category=tre',
+    headers: {
+      Authorization: "Bearer " + token,
+    },
+    success: function (response) {
+      content = "<option value='0'>SELECTIONNER</option>";
+      var r
+      if(typeof(response["results"])==="undefined"){
+        r = null
+      }else{
+        r = response['results']
+        typeLogement = response['results']
+        typeLogement.sort(sotert)
+      }
+      if(r != null){
+        typeLogement.forEach((elt) => {
+          content = content +"<option value = " +elt["_id"] +">" +elt["nom"] +"</option>";
+          });
+        $("#ligne_type").empty();
+        $("#ligne_type").append(
+          "<label for='exampleInputEmail1'>Type </label>\
+          <select  class='form-select style='display: none;' form-control form-select-sm' id='type'> " +
+            content +
+            "</select>"
+        );
+      }
+    },
+    error: function (response) {
+      console.log(response);
+    },
+  });
+}
+
+function addLogement(compteclient) {
+  var data = {};
+  $("#goSave").html("Enregistrement en cours...");
+  //chargement info basic de l'objet à POST
+  data["cas"]="ajout";
+  if(casLogement = 0){
+    data['cas']="ancien"
+  }
+  data["client"] = {
+      "_id": compteclient['id'],
+      "adresse": compteclient[""],
+      "email": compteclient['user']['email'],
+      "nom" : compteclient['user']['prenom']+" "+compteclient['user']['nom']+"   "+compteclient["societe"],
+      "telephone": compteclient['telephone'],
+      "adresse": compteclient['adresse']
+
+  };
+  data["numero_de_la_voie"] = "";
+  data["extenssion"] = "";
+  data["voie"] = "";
+  data["nom_de_la_voie"] = "";
+  data["information_complementaire"] = $("#adresse_complementaire_propriete").val();
+  data["postal_code"] = $("#code_postal_propriete").val();
+  data["ville"] = $("#ville_propriete").val();
+  data["n_logement"] = $("#numero_propriete").val();
+  data["type_log"] = $("#type").val();
+  data["mise_en_service_le"] = "";
+  data["batiment"] = "";
+  data["etage"] = $("#numero_sol_propriete").val();
+  data["escalier"] = "";
+  data["group"] = "";
+  data["secteur"] ="";
+  data["surface"] = $("#surface_propriete").val();
+  data["code_fact"] = "";
+  data["ref_lot_client"] = $("#ref_lot").val();
+  data["cave"] = $("#numero_cave_propriete").val();
+  data["parking"] = $("#numero_parking_propriete").val();
+  data["n_porte"] = "";
+  data["adresse"] = $("#adresse_propriete").val();
+  data["code_access"] = "";
+  data["autres"] = "";
+  data["proprietaire"] ="";
+  data["type_de_constat"] = "";
+  data["iduser"] = $.cookie('id_user_logged');
+  let resultat = 1;
+
+  $.ajax({
+    type: "POST",
+    crossDomain: true,
+    dataType: "json",
+    url: "http://195.15.218.172/edlgateway/api/v1/logement/logement/add",
+    headers: {
+      Authorization: "Bearer " + $.cookie("token"),
+      "content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    },
+    data: JSON.stringify(data),
+    success: function (response) {
+      resultat = 1;
+      addRdv();
+      $("#goSave").html("Enregistrer");
+    },
+    error: function (response) {
+      $("#goSave").html("Enregistrer");
+      alert("Echec de l'ajout du RDV doublond de réference de logement");
+      $("#editForm").modal('hide')
+      resultat= 0;
+    },
+  });
+  return resultat;
+}
+
