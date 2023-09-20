@@ -20,7 +20,10 @@ function login(){
                     $.cookie("id_agent",response["info_concession"]["agent_rattache"]['id'])
                     var nom = response["info_concession"]["agent_rattache"]['nom']+" "+response["info_concession"]["agent_rattache"]['prenom']
                     $.cookie("nom_agent",nom)
-                    $.cookie("id_user_agent",response["info_concession"]["agent_rattache"]['user'])
+                    $.cookie("societe_client_sal",response["societe"]);
+                    $.cookie("adresse",response["adresse"]);
+                    $.cookie("telephone",response["telephone"]);
+                    $.cookie("id_user_agent",response["info_concession"]["agent_rattache"]['user']);
                 }else{
                     $.cookie("id_agent","vide")
                     $.cookie("nom_agent","vide")
@@ -39,7 +42,9 @@ function login(){
                     $.cookie("prenom_agent",response["client"]["agent_prenom"])                    
                     $.cookie("id_client_sal",response["client"]["id"])
                     $.cookie("nom_client_sal",response["client"]["nom"])
+                    $.cookie("email_client_sal",response["client"]["email"])
                     $.cookie("prenom_client_sal",response["client"]["prenom"])
+                    //$.cookie("tel_client_sal",response["client"]["prenom"])
                     $.cookie("societe_client_sal",response["client"]["societe"])
                     $.cookie("id_user_agent",response["client"]["agent_user"])
 		    $.cookie('id_user_client',response['client']['user_id'])

@@ -105,36 +105,20 @@ function getClient(cas = 0, val_ = 1) {
         content +
         "'/>"
     );
+    getLogementClient($.cookie("id_client_sal"));
+    clientForWork ={
+      "id":$.cookie("id_client_sal"),
+      "_id": $.cookie("id_client_sal"),
+      "email": $.cookie("email_client_sal"),
+      "nom" : $.cookie("prenom_client_sal")+" "+ $.cookie("nom_client_sal")+"   "+$.cookie("societe_client_sal"),
+      "telephone": "",
+      "adresse":  ""
+  }
   }
 }
 
-function getPasseur(cas = 0, add = 0,client=0) {
-  var id_client = ""
-  
-  if(client == 0){
-    id_client = $('#client_val').val();
-  }else{
-    id_client = client;
-  }
-  
-
-  if ($.cookie("group") == "Client pro" || $.cookie("group") == "Client particulier") {
-      id_client = $.cookie("id_logged_user_user");
-  }
-  if ($.cookie("group") == "Salarie") {
-    content = $.cookie("name") + " " + $.cookie("first_name");
-    $("#passeur").empty();
-    $("#passeur").append(
-      "<label for='exampleInputEmail1'>Passeur</label>\
-        <input readonly=''  class='form-select form-control ' value= '" +
-        content +
-        "'/>"
-    );
-    return;
-  }
-  
-  clientForWork = listeClient.find(elem => elem.user.id.toString() === $('#client_val').val().toString());
-  var url_ = "http://195.15.218.172/edlgateway/api/v1/logement/single/logement/compte_client/?ID="+clientForWork['id'];
+function getLogementClient(id){
+  var url_ = "http://195.15.218.172/edlgateway/api/v1/logement/single/logement/compte_client/?ID="+id;
   $.ajax({
     type: "GET",
     url: url_,
@@ -173,6 +157,50 @@ function getPasseur(cas = 0, add = 0,client=0) {
       console.log(response);
     },
   });
+}
+
+function getPasseur(cas = 0, add = 0,client=0) {
+  var id_client = ""
+  
+  if(client == 0){
+    id_client = $('#client_val').val();
+  }else{
+    id_client = client;
+  }
+  if($.cookie("group") == "Administrateur" || $.cookie("group") == "Agent secteur" || $.cookie("group") == "Agent constat" ||$.cookie("group") == "Audit planneur"){
+    clientForWork = listeClient.find(elem => elem.user.id.toString() === $('#client_val').val().toString());
+  }
+  if ($.cookie("group") == "Client pro" || $.cookie("group") == "Client particulier") {
+      id_client = $.cookie("id_logged_user_user");
+      clientForWork ={
+        "id":$.cookie('id_user_logged'),
+        "_id": $.cookie('id_user_logged'),
+        "email": $.cookie('email'),
+        "nom" : $.cookie('first_name')+" "+ $.cookie('name')+"   "+$.cookie("societe_client_sal"),
+        "telephone": $.cookie("telephone"),
+        "adresse":  $.cookie("adresse")
+    }
+  }
+  if ($.cookie("group") == "Salarie") {
+    content = $.cookie("name") + " " + $.cookie("first_name");
+    $("#passeur").empty();
+    $("#passeur").append(
+      "<label for='exampleInputEmail1'>Passeur</label>\
+        <input readonly=''  class='form-select form-control ' value= '" +
+        content +
+        "'/>"
+    );
+    clientForWork ={
+      "id":$.cookie("id_client_sal"),
+      "_id": $.cookie("id_client_sal"),
+      "email": $.cookie("email_client_sal"),
+      "nom" : $.cookie("prenom_client_sal")+" "+ $.cookie("nom_client_sal")+"   "+$.cookie("societe_client_sal"),
+      "telephone": "",
+      "adresse":  ""
+  }
+    return;
+  }
+  getLogementClient(clientForWork['id'])
   var url_ = salarie_add_not_pg+"&client="+id_client.toString()
   $.ajax({
     type: "GET",
@@ -927,18 +955,22 @@ function addLogement(compteclient) {
   $("#goSave").html("Enregistrement en cours...");
   //chargement info basic de l'objet à POST
   data["cas"]="ajout";
-  if(casLogement = 0){
+  if(casLogement == 0){
     data['cas']="ancien"
   }
-  data["client"] = {
-      "_id": compteclient['id'],
-      "adresse": compteclient[""],
-      "email": compteclient['user']['email'],
-      "nom" : compteclient['user']['prenom']+" "+compteclient['user']['nom']+"   "+compteclient["societe"],
-      "telephone": compteclient['telephone'],
-      "adresse": compteclient['adresse']
-
-  };
+  if($.cookie("group") == "Administrateur" || $.cookie("group") == "Agent secteur" || $.cookie("group") == "Agent constat" ||$.cookie("group") == "Audit planneur"){
+    data["client"] = {
+        "_id": compteclient['id'],
+        "email": compteclient['user']['email'],
+        "nom" : compteclient['user']['prenom']+" "+compteclient['user']['nom']+"   "+compteclient["societe"],
+        "telephone": compteclient['telephone'],
+        "adresse": compteclient['adresse']
+    };
+  }
+  
+  if ($.cookie("group") == "Client pro" || $.cookie("group") == "Client particulier" || $.cookie("group") =="Salarie") {
+    data["client"] = clientForWork
+  }
   data["numero_de_la_voie"] = "";
   data["extenssion"] = "";
   data["voie"] = "";
