@@ -1,5 +1,6 @@
 var next = "";
 var prev = "";
+var clientFor ="";
 function getAgentManage(as, ap,secteur) {
   var content = "";
   data={}
@@ -77,7 +78,7 @@ function getRdvToEditP() {
     headers: {
       Authorization: "Bearer " + token,
     },
-    success: function (response) {
+    success:  function (response) {
       $("#nom_bailleur").val(response[0]["propriete"]["bailleur"]["nom"]);
       $("#prenom_bailleur").val(response[0]["propriete"]["bailleur"]["prenom"]);
       $("#email_bailleur").val(response[0]["propriete"]["bailleur"]["email"]);
@@ -110,6 +111,10 @@ function getRdvToEditP() {
       var time_ = new Date(response[0]["date"]).toISOString().split("T")[1];
       $("#date").val(formattedDate);
       $("#date_plan").val(formattedDate);
+      if ($.cookie("group") == "Client pro" || $.cookie("group") == "Client particulier") {
+        $("#date_plan").val(formattedDate.split('T')[0]);
+      }
+      
       //$('#heure').val(time_.split('Z')[0])
 
       $("#ref_edl").val(response[0]["id"]);
@@ -132,12 +137,21 @@ function getRdvToEditP() {
       $("#info_diverses").val(response[0]["info_diverses"]);
       
       if (response[0]["client"] != null) {
+        
+        clientFor ={
+          "id":response[0]["client"]['id'],
+          "_id": response[0]["client"]['id'],
+          "email": response[0]["client"]['user']['email'],
+          "nom" : response[0]["client"]['user']['prenom']+" "+ response[0]["client"]['user']['nom']+"   "+response[0]["client"]['societe'],
+          "telephone": response[0]["client"]['telephone'],
+          "adresse":  response[0]["client"]['adresse']
+      }
         getClient(response[0]["client"]["user"]["id"], (val_ = 1));
       }
       if (response[0]["passeur"] != null) {
-        getPasseur(cas = response[0]["passeur"][0]["user"]["id"],add=1,client=response[0]["client"]["user"]["id"]);
+        getPasseur(cas = response[0]["passeur"][0]["user"]["id"],add=1,client=response[0]["client"]["user"]["id"],clientF=clientFor);
       } else {
-        getPasseur(cas = 0,add=1,client=response[0]["client"]["user"]["id"]);
+        getPasseur(cas = 0,add=1,client=response[0]["client"]["user"]["id"],clientF=clientFor);
       }
       if (response[0]["agent"] != null) {
         getAgent((cas = 1), (val_ = response[0]["agent"]["user"]["id"]));

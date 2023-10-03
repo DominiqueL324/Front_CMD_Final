@@ -893,14 +893,17 @@
                           <form>
                               <div class="row">
                                   <div class="col">
-                                      <div class="form-group">
-                                        <label for="exampleInputEmail1">Date</label
-                                        ><input
-                                          type="datetime-local"
-                                          class="form-control undefined"
-                                          name="date_plan"
-                                          id="date_plan"
-                                        />
+                                      <div class="form-group" >
+                                        <div id="dateRow">
+                                           <label for="exampleInputEmail1">Date</label
+                                            ><input
+                                              type="datetime-local"
+                                              class="form-control undefined"
+                                              name="date_plan"
+                                              id="date_plan"
+                                            />
+                                        </div>
+                                        
                                       </div>
                                     </div>
                                 </div>
@@ -975,6 +978,13 @@
       checkLoged()
       loadNav()
       getRdvToEditP()
+
+      if ($.cookie("group") == "Client pro" || $.cookie("group") == "Client particulier") {
+        $('#dateRow').empty();
+        $("#dateRow").append("<label for='exampleInputEmail1'>Date</label>");
+        $("#dateRow").append("<input type='date' class='form-control undefined' name='date_plan' id='date_plan'/>");
+      }
+      
 
     </script>
   </body>

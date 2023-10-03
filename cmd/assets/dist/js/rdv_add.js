@@ -3,6 +3,7 @@ let listeLogementClient = [];
 let typeLogement = [];
 let clientForWork = {};
 let casLogement = 0;
+var clientFor ="";
 $("#telephone_locataire").keyup(function () {
   var min = $("#telephone_locataire").val();
   min = min.toString();
@@ -159,7 +160,7 @@ function getLogementClient(id){
   });
 }
 
-function getPasseur(cas = 0, add = 0,client=0) {
+function getPasseur(cas = 0, add = 0,client=0,clientF=0) {
   var id_client = ""
   
   if(client == 0){
@@ -199,6 +200,9 @@ function getPasseur(cas = 0, add = 0,client=0) {
       "adresse":  ""
   }
     return;
+  }
+  if(clientF!=0){
+    clientForWork=clientF;
   }
   getLogementClient(clientForWork['id'])
   var url_ = salarie_add_not_pg+"&client="+id_client.toString()
@@ -257,7 +261,12 @@ function getPasseur(cas = 0, add = 0,client=0) {
         $("#agent_val").val(response[0]["info_concession"]["agent_rattache"]["user"]).change();
       },
       error: function (response) {
+      if ($.cookie("group") == "Client pro" || $.cookie("group") == "Client particulier") {
+  
+      }else{
         alert("Echec de récupération de l'agent référent selectionnez le manuellement");
+      }
+        
       },
     });
   }
@@ -408,7 +417,7 @@ function getInterventionandPropriete(cas = 1, val_ = 0, val1 = 0) {
       $("#intervention").empty();
       $("#intervention").append(
         " <label for='exampleInputEmail1'>Type Intervention</label>\
-                    <select onchange='onTypeIntervention()'  class='form-select form-control form-select-lg' id='intervention_val'> " +
+                    <select onchange='onTypeIntervention()'  class='form-select form-control form-select-md' id='intervention_val'> " +
           content +
           "</select>"
       );
@@ -442,7 +451,7 @@ function getInterventionandPropriete(cas = 1, val_ = 0, val1 = 0) {
       $("#propriete").empty();
       $("#propriete").append(
         " <label for='exampleInputEmail1'>Nature du bien</label>\
-                    <select  class='form-select form-control form-select-lg' id='propriete_val'> " +
+                    <select  class='form-select form-control form-select-md' id='propriete_val'> " +
           content +
           "</select>"
       );
@@ -629,12 +638,20 @@ function getRdvToEdit() {
       $("#list_documents").val(response[0]["liste_document_recuperer"]);
       $("#info_diverses").val(response[0]["info_diverses"]);
       if (response[0]["client"] != null) {
+        clientFor ={
+          "id":response[0]["client"]['id'],
+          "_id": response[0]["client"]['id'],
+          "email": response[0]["client"]['user']['email'],
+          "nom" : response[0]["client"]['user']['prenom']+" "+ response[0]["client"]['user']['nom']+"   "+response[0]["client"]['societe'],
+          "telephone": response[0]["client"]['telephone'],
+          "adresse":  response[0]["client"]['adresse']
+      }
         getClient(response[0]["client"]["user"]["id"], val_ = 1);
       }
       if (response[0]["passeur"] != null) {
-        getPasseur(cas = response[0]["passeur"][0]["user"]["id"],add=1,client=response[0]["client"]["user"]["id"]);
+        getPasseur(cas = response[0]["passeur"][0]["user"]["id"],add=1,client=response[0]["client"]["user"]["id"],clientF=clientFor);
       } else {
-        getPasseur(cas = 0,add=1,client=response[0]["client"]["user"]["id"]);
+        getPasseur(cas = 0,add=1,client=response[0]["client"]["user"]["id"],clientF=clientFor);
       }
       if (response[0]["agent"] != null) {
         var agent = response[0]["agent"]["user"]["nom"]+" "+response[0]["agent"]["user"]["prenom"]
@@ -999,7 +1016,6 @@ function addLogement(compteclient) {
   data["type_de_constat"] = "";
   data["iduser"] = $.cookie('id_user_logged');
   let resultat = 1;
-
   $.ajax({
     type: "POST",
     crossDomain: true,
