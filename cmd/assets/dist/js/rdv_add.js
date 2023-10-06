@@ -154,7 +154,7 @@ function getLogementClient(id,ref_logement=""){
           "<select  onchange='displayLogement()' class='form-select  form-control form-select-sm' id='logement'> " +
             content + "</select>");
       }
-      if(cas!=""){
+      if(ref_logement!=""){
         logementForEdit = listeLogementClient.find(elem => elem.ref_lot_client.toString()==ref_logement.toString());
         console.log(ref_logement)
         $('#logement').val(logementForEdit["_id"]).change();
@@ -477,6 +477,7 @@ function getInterventionandPropriete(cas = 1, val_ = 0, val1 = 0) {
   });
 }
 function addRdv() {
+  
   $("#goSave").html("Enregistrement en cours...");
   data = {};
   data["nom_bailleur"] = $("#nom_bailleur").val();
@@ -804,6 +805,26 @@ $('#oldlogement').click(function(){
 });
 
 $("#goSave").on("click", function () {
+  
+  $("#errorField").text("");
+  let error_ = "Le(s) champ(s)"
+  let compt =0;
+  if($("#intervention_val").val()=="0"){
+    console.log('ici1')
+    error_=error_+" Type intervention,"
+    compt++;
+  }
+  if($("#propriete_val").val()=="0"){
+    console.log('ici')
+    error_=error_+" Nature du bien"
+    compt++;
+  }
+  if(compt>0 ){
+    error_ = error_ + " sont obligatoires"
+    alert(error_);
+    $("#errorField").text(error_);
+    return;
+  }
   $("#editForm").modal('show')
   resultat = addLogement(clientForWork);
   /*if(resultat==1){
@@ -922,6 +943,23 @@ function editRdv() {
   });
 }
 $("#goEdit").on("click", function () {
+  let error_ = "Le(s) champ(s)"
+  let compt =0;
+  if($("#intervention_val").val()=="0"){
+    console.log('ici1')
+    error_=error_+" Type intervention,"
+    compt++;
+  }
+  if($("#propriete_val").val()=="0"){
+    console.log('ici')
+    error_=error_+" Nature du bien"
+    compt++;
+  }
+  if(compt>0 ){
+    error_ = error_ + " sont obligatoires"
+    alert(error_);
+    return;
+  }
   $("#editForm").modal('show')
   addLogement(clientForWork,cas=1);
 });
