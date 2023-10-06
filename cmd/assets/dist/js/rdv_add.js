@@ -3,7 +3,8 @@ let listeLogementClient = [];
 let typeLogement = [];
 let clientForWork = {};
 let casLogement = 0;
-var clientFor ="";
+var clientFor =""; 
+let logementForEdit = {};
 $("#telephone_locataire").keyup(function () {
   var min = $("#telephone_locataire").val();
   min = min.toString();
@@ -118,7 +119,7 @@ function getClient(cas = 0, val_ = 1) {
   }
 }
 
-function getLogementClient(id){
+function getLogementClient(id,ref_logement=""){
   var url_ = "http://195.15.218.172/edlgateway/api/v1/logement/single/logement/compte_client/?ID="+id;
   $.ajax({
     type: "GET",
@@ -134,6 +135,7 @@ function getLogementClient(id){
       }else{
         r = response['results']
         listeLogementClient = response['results']
+        
       }
       if(r != null){
         r.forEach((elt) => {
@@ -152,6 +154,11 @@ function getLogementClient(id){
           "<select  onchange='displayLogement()' class='form-select  form-control form-select-sm' id='logement'> " +
             content + "</select>");
       }
+      if(cas!=""){
+        logementForEdit = listeLogementClient.find(elem => elem.ref_lot_client.toString()==ref_logement.toString());
+        console.log(ref_logement)
+        $('#logement').val(logementForEdit["_id"]).change();
+      }
       
     },
     error: function (response) {
@@ -160,7 +167,7 @@ function getLogementClient(id){
   });
 }
 
-function getPasseur(cas = 0, add = 0,client=0,clientF=0) {
+function getPasseur(cas = 0, add = 0,client=0,clientF=0,reference_logement="") {
   var id_client = ""
   
   if(client == 0){
@@ -204,7 +211,12 @@ function getPasseur(cas = 0, add = 0,client=0,clientF=0) {
   if(clientF!=0){
     clientForWork=clientF;
   }
-  getLogementClient(clientForWork['id'])
+  if(reference_logement!=""){
+    getLogementClient(clientForWork['id'],ref_logement=reference_logement)
+  }else{
+    getLogementClient(clientForWork['id'])
+  }
+  
   var url_ = salarie_add_not_pg+"&client="+id_client.toString()
   $.ajax({
     type: "GET",
@@ -649,9 +661,9 @@ function getRdvToEdit() {
         getClient(response[0]["client"]["user"]["id"], val_ = 1);
       }
       if (response[0]["passeur"] != null) {
-        getPasseur(cas = response[0]["passeur"][0]["user"]["id"],add=1,client=response[0]["client"]["user"]["id"],clientF=clientFor);
+        getPasseur(cas = response[0]["passeur"][0]["user"]["id"],add=1,client=response[0]["client"]["user"]["id"],clientF=clientFor,reference_logement=response[0]["ref_lot"].toString());
       } else {
-        getPasseur(cas = 0,add=1,client=response[0]["client"]["user"]["id"],clientF=clientFor);
+        getPasseur(cas = 0,add=1,client=response[0]["client"]["user"]["id"],clientF=clientFor,reference_logement=response[0]["ref_lot"].toString());
       }
       if (response[0]["agent"] != null) {
         var agent = response[0]["agent"]["user"]["nom"]+" "+response[0]["agent"]["user"]["prenom"]
@@ -659,6 +671,7 @@ function getRdvToEdit() {
       } else {
         getAgent((cas = 1), (val_ = 0),agent=" ");
       }
+      getTypeLogement(cas=response[0]["propriete"]["type"]);
       if (response[0]["audit_planneur"] != null) {
         $("#planneur").val(
           response[0]["audit_planneur"]["user"]["nom"] +
@@ -910,8 +923,7 @@ function editRdv() {
 }
 $("#goEdit").on("click", function () {
   $("#editForm").modal('show')
-  addLogement(clientForWork);
-  editRdv();
+  addLogement(clientForWork,cas=1);
 });
 
 function onTypeIntervention(){
@@ -931,7 +943,7 @@ function sotert(object1,object2) {
         return 0;
 }
 
-function getTypeLogement(){
+function getTypeLogement(cas=0){
   $.ajax({
     type: "GET",
     url: 'http://195.15.218.172/edlgateway/api/v1/logement/type_log/all?start=12&limit=12&count=12&category=tre',
@@ -959,6 +971,10 @@ function getTypeLogement(){
             content +
             "</select>"
         );
+        if(cas!=0){
+          let type_ = typeLogement.find(elem => elem.nom.toString() === cas.toString());
+          $("#type").val(type_["_id"]).change();
+        }
       }
     },
     error: function (response) {
@@ -967,7 +983,7 @@ function getTypeLogement(){
   });
 }
 
-function addLogement(compteclient) {
+function addLogement(compteclient,cas = 0) {
   var data = {};
   $("#goSave").html("Enregistrement en cours...");
   //chargement info basic de l'objet à POST
@@ -978,8 +994,8 @@ function addLogement(compteclient) {
   if($.cookie("group") == "Administrateur" || $.cookie("group") == "Agent secteur" || $.cookie("group") == "Agent constat" ||$.cookie("group") == "Audit planneur"){
     data["client"] = {
         "_id": compteclient['id'],
-        "email": compteclient['user']['email'],
-        "nom" : compteclient['user']['prenom']+" "+compteclient['user']['nom']+"   "+compteclient["societe"],
+        "email": compteclient['user']==undefined?compteclient['email']:compteclient['user']['email'],
+        "nom" : compteclient['user']==undefined?compteclient['prenom']:compteclient['user']['prenom']+" "+compteclient['user']==undefined?compteclient['nom']:compteclient['user']['nom'],
         "telephone": compteclient['telephone'],
         "adresse": compteclient['adresse']
     };
@@ -1029,7 +1045,12 @@ function addLogement(compteclient) {
     data: JSON.stringify(data),
     success: function (response) {
       resultat = 1;
-      addRdv();
+      if(cas!=0){
+        editRdv()
+      }else{
+        addRdv();
+      }
+      
       $("#goSave").html("Enregistrer");
     },
     error: function (response) {
