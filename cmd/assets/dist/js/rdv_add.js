@@ -1000,7 +1000,10 @@ function getTypeLogement(cas=0){
       }
       if(r != null){
         typeLogement.forEach((elt) => {
-          content = content +"<option value = " +elt["_id"] +">" +elt["nom"] +"</option>";
+          if(elt["status"]=="on"){
+            content = content +"<option value = " +elt["_id"] +">" +elt["nom"] +"</option>";
+          }
+          
           });
         $("#ligne_type").empty();
         $("#ligne_type").append(
