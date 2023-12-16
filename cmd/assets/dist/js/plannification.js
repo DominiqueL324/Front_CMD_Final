@@ -109,6 +109,10 @@ function getRdvToEditP() {
       $("#ref_lot").val(response[0]["ref_lot"]);
       var formattedDate = new Date(response[0]["date"]).toJSON().slice(0, 19);
       var time_ = new Date(response[0]["date"]).toISOString().split("T")[1];
+      var heureComingFromBd = formattedDate.split("T")[1].split(':')[0];
+      if (heureComingFromBd.toString() == "00"){
+          formattedDate = formattedDate.split("T")[0]+"T06:00:00";
+      }
       $("#date").val(formattedDate);
       $("#date_plan").val(formattedDate);
       if ($.cookie("group") == "Client pro" || $.cookie("group") == "Client particulier") {
@@ -262,10 +266,12 @@ function getRdvToEditP() {
       }
       if($.cookie('group')=="Agent constat"){
         $("#btnPlanneur").css("display", "none");
+        $("#goEditRdv").css("display", "none");
+        $("#goDate").css("display", "none");
       }
     },
     error: function (response) {
-      console.log(response);
+      //console.log(response);
     },
   });
  }
